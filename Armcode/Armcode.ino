@@ -1,5 +1,5 @@
 #include <Servo.h>
-// written by: Ahmad Saeed
+// Based off the guide below:
 //https://www.instructables.com/DIY-Robotic-Arm/
 
 Servo myservo1;
