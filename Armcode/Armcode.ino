@@ -9,10 +9,11 @@ Servo myservo4;
 Servo myservo5;
 Servo myservo6;
 
-int potpin = A0;
-int potpin1 = A1;
-int potpin2 = A2;
-int potpin3 = A3;
+int VRX_1 = A0; // Joystick 1
+int VRY_1 = A1;
+int VRX_2 = A2; // Joystick 2
+int VRY_2 = A3;
+
 int potpin4 = A4;
 int potpin5 = A5;
 int val;
@@ -29,23 +30,23 @@ void setup()
 
 void loop()
 {
-  val = analogRead(potpin);
-  val = map(val, 0, 1023, 0, 250);
+  val = analogRead(VRX_1);
+  val = map(val, 0, 1023, 0, 180);
   myservo1.write(val);
   delay(15);
 
-  val = analogRead(potpin1);
-  val = map(val, 0, 1023, 0, 250);
+  val = analogRead(VRY_1);
+  val = map(val, 0, 1023, 0, 180);
   myservo2.write(val);
   delay(15);
 
-  val = analogRead(potpin2);
-  val = map(val, 0, 1023, 0, 250);
+  val = analogRead(VRX_2);
+  val = map(val, 0, 1023, 0, 180);
   myservo3.write(val);
   delay(15);
 
-  val = analogRead(potpin3);
-  val = map(val, 0, 1023, 0, 250);
+  val = analogRead(VRY_2);
+  val = map(val, 0, 1023, 0, 180);
   myservo4.write(val);
   delay(15);
 
