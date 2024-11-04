@@ -2,11 +2,11 @@
 //https://www.instructables.com/DIY-Robotic-Arm/
 
 Servo myservo1;
-Servo myservo2;
-Servo myservo3;
-Servo myservo4;
-Servo myservo5;
-Servo myservo6;
+//Servo myservo2;
+//Servo myservo3;
+//Servo myservo4;
+//Servo myservo5;
+//Servo myservo6;
 
 int VRX_1 = A0; // Joystick 1
 int VRY_1 = A1;
@@ -49,14 +49,17 @@ void loop()
   // SERVO 1
   X1_Pos = analogRead(VRX_1);
   X1_Pos = map(X1_Pos, 0, 1023, 0, 180);
-  
-  if(X1_Pos > 95){
-    angle1 += 3.0f; // Add some degrees to the initial position
-  } else if(X1_Pos < 85){
-    angle1 -= 3.0f; // Go other direction from initial position
+  if(angle1 > 180){
+    angle1 = 180;
+  } else if(angle1 < 0){
+    angle1 = 0;
   }
   
-  if(angle1 > 1 && angle1 < 265){ // Limit the angle so it doesn't go crazy
+  if((X1_Pos > 95) && (180 >= angle1) && (angle1 >= 0)){
+    angle1 += 2.0f; // Add some degrees to the initial position
+    myservo1.write(angle1);
+  } else if((X1_Pos < 85) && (180 >= angle1) && (angle1 >= 0)){
+    angle1 -= 2.0f; // Go other direction from initial position
     myservo1.write(angle1);
   }
   delay(15);
@@ -70,8 +73,12 @@ void loop()
     angle2 -= 3.0f; // Go other direction from initial position
   }
 
-  if(angle2 > 1 && angle2 < 265){ // Limit the angle so it doesn't go crazy
-    myservo1.write(angle2);
+  if((Y1_Pos > 95) && (180 >= angle2) && (angle2 >= 0)){
+    angle2 += 2.0f; // Add some degrees to the initial position
+    myservo2.write(angle2);
+  } else if((Y1_Pos < 85) && (180 >= angle1) && (angle1 >= 0)){
+    angle2 -= 2.0f; // Go other direction from initial position
+    myservo2.write(angle2);
   }
   delay(15);
 
@@ -84,8 +91,12 @@ void loop()
     angle3 -= 3.0f; // Go other direction from initial position
   }
   
-  if(angle3 > 1 && angle3 < 265){ // Limit the angle so it doesn't go crazy
-    myservo1.write(angle3);
+  if((X2_Pos > 95) && (180 >= angle3) && (angle3 >= 0)){
+    angle3 += 2.0f; // Add some degrees to the initial position
+    myservo3.write(angle3);
+  } else if((X2_Pos < 85) && (180 >= angle3) && (angle3 >= 0)){
+    angle3 -= 2.0f; // Go other direction from initial position
+    myservo3.write(angle3);
   }
   delay(15);
 
@@ -93,16 +104,21 @@ void loop()
   Y2_Pos = analogRead(VRY_2);
   Y2_Pos = map(Y2_Pos, 0, 1023, 0, 180);
   if(Y2_Pos > 95){
-    angle4 += 3.0f; // Add some degrees to the initial position
+    angle4 += 2.0f; // Add some degrees to the initial position
   } else if(Y2_Pos < 85){
-    angle4 -= 3.0f; // Go other direction from initial position
+    angle4 -= 2.0f; // Go other direction from initial position
   }
     
-  if(angle4 > 1 && angle4 < 265){ // Limit the angle so it doesn't go crazy
-    myservo1.write(angle4);
+  if((Y2_Pos > 95) && (180 >= angle4) && (angle4 >= 0)){
+    angle4 += 2.0f; // Add some degrees to the initial position
+    myservo4.write(angle4);
+  } else if((Y2_Pos < 85) && (180 >= angle4) && (angle4 >= 0)){
+    angle4 -= 2.0f; // Go other direction from initial position
+    myservo4.write(angle4);
   }
   delay(15);
-
+  
+//
 //  val = analogRead(potpin4);
 //  val = map(val, 0, 1023, 0, 250);
 //  myservo5.write(val);
