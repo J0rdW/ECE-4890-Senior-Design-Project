@@ -1,5 +1,4 @@
 #include <Servo.h>
-// Based off the guide below:
 //https://www.instructables.com/DIY-Robotic-Arm/
 
 Servo myservo1;
@@ -40,10 +39,11 @@ void loop()
   X1_Pos = map(X1_Pos, 0, 1023, 0, 180);
   if(X1_Pos > 95){
     X1_Pos += 3.0f; // Add some degrees to the initial position
+    myservo1.write(X1_Pos);
   } else if(X1_Pos < 85){
     X1_Pos -= 3.0f; // Go other direction from initial position
+    myservo1.write(X1_Pos);
   }
-  myservo1.write(X1_Pos);
   delay(15);
 
   // SERVO 2
@@ -51,10 +51,11 @@ void loop()
   Y1_Pos = map(Y1_Pos, 0, 1023, 0, 180);
   if(Y1_Pos > 95){
     Y1_Pos += 3.0f; // Add some degrees to the initial position
+    myservo2.write(Y1_Pos);
   } else if(Y1_Pos < 85){
     Y1_Pos -= 3.0f; // Go other direction from initial position
+    myservo2.write(Y1_Pos);
   }
-  myservo2.write(Y1_Pos);
   delay(15);
 
   // SERVO 3
@@ -62,10 +63,11 @@ void loop()
   X2_Pos = map(X2_Pos, 0, 1023, 0, 180);
   if(X2_Pos > 95){
     X2_Pos += 3.0f; // Add some degrees to the initial position
+    myservo3.write(X2_Pos);
   } else if(X2_Pos < 85){
     X2_Pos -= 3.0f; // Go other direction from initial position
+    myservo3.write(X2_Pos);
   }
-  myservo3.write(X2_Pos);
   delay(15);
 
   // SERVO 4
@@ -73,10 +75,11 @@ void loop()
   Y2_Pos = map(Y2_Pos, 0, 1023, 0, 180);
   if(Y2_Pos > 95){
     Y2_Pos += 3.0f; // Add some degrees to the initial position
+    myservo4.write(Y2_Pos);
   } else if(Y2_Pos < 85){
     Y2_Pos -= 3.0f; // Go other direction from initial position
+    myservo4.write(Y2_Pos);
   }
-  myservo4.write(Y2_Pos);
   delay(15);
 
 //  val = analogRead(potpin4);
