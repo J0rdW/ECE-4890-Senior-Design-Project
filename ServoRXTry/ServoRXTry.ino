@@ -1,6 +1,7 @@
 //************** RECEIEVER CODE FOR SERVO CONTROL (ARDUINO NANO PINS)  **************//
 
 #include <SPI.h>
+#include <Servo.h>
 #include "RF24.h" // This is the RF24 library that may need to be installed through the Manage Libraries feature in the IDE.
 
 #include <Servo.h>//Include and create a servo object for controlling the servo motor
@@ -42,7 +43,12 @@ const uint64_t recv_pipe=0xDEADBEEFF1L; //They must be the same on both ends of 
 
 
 // Define buttons and joystick pins on ARDUINO NANO
-#define SERVO_PIN 3
+#define SERVO1_PIN 3
+#define SERVO2_PIN 5
+#define SERVO3_PIN 4
+#define SERVO4_PIN 7
+#define SERVO5_PIN 11
+#define SERVO6_PIN 12
 
 // Variables for servo
 bool MoveX_F1=false;
@@ -60,9 +66,17 @@ void setup()
   radio.openWritingPipe(send_pipe);//Thses are the reverse of the transmit code.
   radio.openReadingPipe(1,recv_pipe);
   radio.startListening();//Give the module a kick
-  servo.attach(SERVO_PIN);//Spool up the servo
+  servo1.attach(SERVO1_PIN);//Spool up the servo
+  servo2.attach(SERVO2_PIN);//Spool up the servo
+  servo3.attach(SERVO3_PIN);//Spool up the servo
+  servo4.attach(SERVO4_PIN);//Spool up the servo
+  servo5.attach(SERVO5_PIN);//Spool up the servo
+  servo6.attach(SERVO6_PIN);//Spool up the servo
+
+
 }
 
+// Joystick1 Servo1
 void loop()
 {
   unsigned long motor_code=NO_ACTION;
@@ -72,13 +86,13 @@ void loop()
       radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
 
     // Check motor_code 
-    if(motor_code==FORWARD)
+    if(motor_code==Servo1XF)
     {
       Serial.println("THE MOTOR HAS STARTED");
       MoveX_F1=true;
       MoveX_R1=false;
     }
-    else if(motor_code==STOP)
+    else if(motor_code==Servo1stop)
     {
       Serial.println("THE MOTOR HAS STOPPED");
       MoveX_F1=false;
@@ -90,7 +104,7 @@ void loop()
       MoveX_F1=false;
       MoveX_R1=false;
     }
-    else if(motor_code==REVERSE)
+    else if(motor_code==Servo1XR)
     {
       Serial.println("In reverse");
       MoveX_R1=true;
@@ -102,7 +116,7 @@ void loop()
   {
       position += 3.0f;   // Add 5 degrees to initial position
       position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo.write(position);
+      servo1.write(position);
       MoveX_F1 = false;  // Stop so servo doesn't keep going
   }
   
@@ -111,8 +125,9 @@ void loop()
   {
       position -= 3.0f;   // Subtract 5 degrees to initial position
       position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo.write(position);
+      servo1.write(position);
       MoveX_R1 = false;  // Stop so servo doesn't keep going
   }
 
 }
+
