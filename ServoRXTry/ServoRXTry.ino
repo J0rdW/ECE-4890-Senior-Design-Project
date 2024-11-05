@@ -52,7 +52,17 @@ const uint64_t recv_pipe=0xDEADBEEFF1L; //They must be the same on both ends of 
 
 // Variables for servo
 bool MoveX_F1=false;
-bool MoveX_R1 = false;
+bool MoveX_R1= false;
+bool MoveY_F2= false;
+bool MoveY_R2= false;
+bool MoveX_F3= false;
+bool MoveX_R3= false;
+bool MoveY_F4= false;
+bool MoveY_R4= false;
+bool MoveX_F5= false;
+bool MoveX_R5= false;
+bool MoveY_F6= false;
+bool MoveY_R6= false;
 float position=90;  // Starts at 90 degrees
 int direction=1;
 
@@ -129,5 +139,259 @@ void loop()
       MoveX_R1 = false;  // Stop so servo doesn't keep going
   }
 
-}
+// // Joystick1 Servo2
 
+
+  if( radio.available())//Keep checking on each loop to see if any data has come in
+  {
+      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
+
+    // Check motor_code 
+    if(motor_code==Servo2YF)
+    {
+      Serial.println("THE MOTOR HAS STARTED");
+      MoveY_F2=true;
+      MoveY_R2=false;
+    }
+    else if(motor_code==Servo2stop)
+    {
+      Serial.println("THE MOTOR HAS STOPPED");
+      MoveY_F2=false;
+      MoveY_R2=false;
+    }
+    else if(motor_code==BOTH)
+    {
+      Serial.println("Both buttons pushed");
+      MoveY_F2=false;
+      MoveY_R2=false;
+    }
+    else if(motor_code==Servo2YR)
+    {
+      Serial.println("In reverse");
+      MoveY_R2=true;
+      MoveY_F2=false;
+    }
+  }
+  // FORWARD (button1)
+  if(MoveY_F2)
+  {
+      position += 3.0f;   // Add 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo2.write(position);
+      MoveY_F2 = false;  // Stop so servo doesn't keep going
+  }
+  
+  // REVERSE (button2)
+  if(MoveY_R2)
+  {
+      position -= 3.0f;   // Subtract 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo2.write(position);
+      MoveY_R2 = false;  // Stop so servo doesn't keep going
+  }
+
+// Joystick2 Servo3
+  if( radio.available())//Keep checking on each loop to see if any data has come in
+  {
+      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
+
+    // Check motor_code 
+    if(motor_code==Servo3XF)
+    {
+      Serial.println("THE MOTOR HAS STARTED");
+      MoveX_F3=true;
+      MoveX_R3=false;
+    }
+    else if(motor_code==Servo3stop)
+    {
+      Serial.println("THE MOTOR HAS STOPPED");
+      MoveX_F3=false;
+      MoveX_R3=false;
+    }
+    else if(motor_code==BOTH)
+    {
+      Serial.println("Both buttons pushed");
+      MoveX_F3=false;
+      MoveX_R3=false;
+    }
+    else if(motor_code==Servo3XR)
+    {
+      Serial.println("In reverse");
+      MoveX_R3=true;
+      MoveX_F3=false;
+    }
+  }
+  // FORWARD (button1)
+  if(MoveX_F3)
+  {
+      position += 3.0f;   // Add 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo3.write(position);
+      MoveX_F3 = false;  // Stop so servo doesn't keep going
+  }
+  
+  // REVERSE (button2)
+  if(MoveX_R3)
+  {
+      position -= 3.0f;   // Subtract 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo3.write(position);
+      MoveX_R3 = false;  // Stop so servo doesn't keep going
+  }
+
+
+// Joystick 2 Servo 4
+
+  if( radio.available())//Keep checking on each loop to see if any data has come in
+  {
+      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
+
+    // Check motor_code 
+    if(motor_code==Servo4YF)
+    {
+      Serial.println("THE MOTOR HAS STARTED");
+      MoveY_F4=true;
+      MoveY_R4=false;
+    }
+    else if(motor_code==Servo4stop)
+    {
+      Serial.println("THE MOTOR HAS STOPPED");
+      MoveY_F4=false;
+      MoveY_R4=false;
+    }
+    else if(motor_code==BOTH)
+    {
+      Serial.println("Both buttons pushed");
+      MoveY_F4=false;
+      MoveY_R4=false;
+    }
+    else if(motor_code==Servo4YR)
+    {
+      Serial.println("In reverse");
+      MoveY_R4=true;
+      MoveY_F4=false;
+    }
+  }
+  // FORWARD (button1)
+  if(MoveY_F4)
+  {
+      position += 3.0f;   // Add 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo4.write(position);
+      MoveY_F4 = false;  // Stop so servo doesn't keep going
+  }
+  
+  // REVERSE (button2)
+  if(MoveY_R4)
+  {
+      position -= 3.0f;   // Subtract 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo4.write(position);
+      MoveY_R4 = false;  // Stop so servo doesn't keep going
+  }
+
+
+  // Joystick 3 Servo 5
+
+
+  if( radio.available())//Keep checking on each loop to see if any data has come in
+  {
+      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
+
+    // Check motor_code 
+    if(motor_code==Servo5XF)
+    {
+      Serial.println("THE MOTOR HAS STARTED");
+      MoveX_F5=true;
+      MoveX_R5=false;
+    }
+    else if(motor_code==Servo5stop)
+    {
+      Serial.println("THE MOTOR HAS STOPPED");
+      MoveX_F5=false;
+      MoveX_R5=false;
+    }
+    else if(motor_code==BOTH)
+    {
+      Serial.println("Both buttons pushed");
+      MoveX_F5=false;
+      MoveX_R5=false;
+    }
+    else if(motor_code==Servo5XR)
+    {
+      Serial.println("In reverse");
+      MoveX_R5=true;
+      MoveX_F5=false;
+    }
+  }
+  // FORWARD (button1)
+  if(MoveX_F5)
+  {
+      position += 3.0f;   // Add 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo5.write(position);
+      MoveX_F5 = false;  // Stop so servo doesn't keep going
+  }
+  
+  // REVERSE (button2)
+  if(MoveX_R5)
+  {
+      position -= 3.0f;   // Subtract 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo5.write(position);
+      MoveX_R5 = false;  // Stop so servo doesn't keep going
+  }
+
+
+
+  // Joystick 3 Servo 6
+
+
+  if( radio.available())//Keep checking on each loop to see if any data has come in
+  {
+      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
+
+    // Check motor_code 
+    if(motor_code==Servo6YF)
+    {
+      Serial.println("THE MOTOR HAS STARTED");
+      MoveY_F6=true;
+      MoveY_R6=false;
+    }
+    else if(motor_code==Servo6stop)
+    {
+      Serial.println("THE MOTOR HAS STOPPED");
+      MoveY_F6=false;
+      MoveY_R6=false;
+    }
+    else if(motor_code==BOTH)
+    {
+      Serial.println("Both buttons pushed");
+      MoveY_F6=false;
+      MoveY_R6=false;
+    }
+    else if(motor_code==Servo6YR)
+    {
+      Serial.println("In reverse");
+      MoveY_R6=true;
+      MoveY_F6=false;
+    }
+  }
+  // FORWARD (button1)
+  if(MoveY_F6)
+  {
+      position += 3.0f;   // Add 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo6.write(position);
+      MoveY_F6 = false;  // Stop so servo doesn't keep going
+  }
+  
+  // REVERSE (button2)
+  if(MoveY_R6)
+  {
+      position -= 3.0f;   // Subtract 5 degrees to initial position
+      position = constrain(position, 0, 270);  // Ensure position is within bounds
+      servo6.write(position);
+      MoveY_R6 = false;  // Stop so servo doesn't keep going
+  }
+}
