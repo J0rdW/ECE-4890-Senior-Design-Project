@@ -11,10 +11,32 @@ int lidarSection;
 int section;
 int displayDistance = 1;
 int displayAngle = 1;
+float inches;
 
 #define NO_ACTION 0
 #define STOP 2
 #define BOTH 3
+
+// LED pins for testing...
+#define g1 4
+#define g2 5
+#define g3 6
+#define r1 7
+#define r2 8
+#define r3 9
+#define b1 10
+#define b2 11
+
+#define samples 10;
+float g2Buffer[samples] = {0};
+float g3Buffer[samples] = {0};
+float r1Buffer[samples] = {0};
+float r2Buffer[samples] = {0};
+float r3Buffer[samples] = {0};
+float b1Buffer[samples] = {0};
+float b2Buffer[samples] = {0};
+float g1Buffer[samples] = {0};
+int bufferIndex = 0;
 
 // So far just moves at 1 speed
 #define SPEED3 12     // Forward
@@ -62,13 +84,8 @@ void lidarStart(){
     //perform data processing here:
     float distance = lidar.getCurrentPoint().distance;
     float angle = lidar.getCurrentPoint().angle;  // 0-360 deg
-    if(distance > 0 && (angle >= 175 && angle <= 185)) {
-      Serial.println("Angle: ");
-      Serial.println(angle);
-      Serial.println("Distance: ");
-      Serial.println(distance);
-      delay(100);
-      count++;
+    if(distance < 3000){
+      handleLED(angle, distance);
     }
   }
   // Otherwise stop the LIDAR and retry
@@ -88,34 +105,65 @@ void lidarStart(){
 void lidarStop(){
   analogWrite(RPLIDAR_MOTOR, 0);
 }
-
-// Splitting up angles into different sections
-int angleSelection(float angle){
-  int section;
-  
-  if((angle > 0) && (angle < 45)){
-    section = 1;
-  }
-  if((angle > 45) && (angle < 90)){
-    section = 2;
-  }
-  if((angle > 90) && (angle < 135)){
-    section = 3;
-  }
-  if((angle > 135) && (angle < 180)){
-    section = 4;
-  }
-  if((angle > 180) && (angle < 225)){
-    section = 5;
-  }
-  if((angle > 225) && (angle < 270)){
-    section = 6;
-  }
-  if((angle > 270) && (angle < 315)){
-    section = 7;
-  }
-  if((angle > 315) && (angle < 360)){
-    section = 8;
-  }
-  return section;
+float toInches(float d){
+  float distanceInches = d/25.4;
+  return distanceInches;
 }
+
+void handleLED(float a, float d){
+    int thresh = 12;
+    inches = toInches(d);
+    if(inches > thresh && (a >= 180 && a <= 225)) {
+      digitalWrite(g2, HIGH);
+    } else if(inches < thresh && (a >= 180 && a <= 225)){
+      digitalWrite(g2, LOW);
+    }
+    if(inches > thresh && (a >= 225 && a <= 270)) {
+      digitalWrite(g3, HIGH);
+    } else if(inches < thresh && (a >= 225 && a <= 270)){
+      digitalWrite(g3, LOW);
+    }
+    if(inches > thresh && (a >= 270 && a <= 315)) {
+      digitalWrite(r1, HIGH);
+      Serial.println("I AM ON");
+    } else if(inches < thresh && (a >= 270 && a <= 315)){
+      digitalWrite(r1, LOW);
+    }
+    if(inches > thresh && (a >= 315 && a <= 360)) {
+      digitalWrite(r2, HIGH);
+    } else if(inches < thresh && (a >= 315 && a <= 360)){
+      digitalWrite(r2, LOW);
+    }
+    // Crosses to 0 and goes from 0 to 180
+    if(inches > thresh && (a >= 0 && a <= 45)) {
+      digitalWrite(r3, HIGH);
+    } else if(inches < thresh && (a >= 0 && a <= 45)){
+      digitalWrite(r3, LOW);
+    }
+    if(inches > thresh && (a >= 45 && a <= 90)) {
+      digitalWrite(b1, HIGH);
+    } else if(inches < thresh && (a >= 45 && a <= 90)){
+      digitalWrite(b1, LOW);
+    }
+    if(inches > thresh && (a >= 90 && a <= 135)) {
+      digitalWrite(b2, HIGH);
+    } else if(inches < thresh && (a >= 90 && a <= 135)){
+      digitalWrite(b2, LOW);
+    }
+    if(inches > thresh && (a >= 135 && a <= 179)) {
+      digitalWrite(g1, HIGH);
+    } else if(inches < thresh && (a >= 135 && a <= 179)){
+      digitalWrite(g1, LOW);
+    }
+}
+
+// Update the 
+void updateBuffer(float buffer[], float value){
+  buffer[bufferIndex % samples] = value;
+  bufferIndex++;
+}
+
+//      Serial.println("Angle: ");
+//      Serial.println(a);
+//      Serial.println("Distance: ");
+//      Serial.println(d);
