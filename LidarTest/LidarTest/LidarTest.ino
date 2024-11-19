@@ -27,7 +27,7 @@ float inches;
 #define b1 10
 #define b2 11
 
-#define samples 10;
+#define samples 10
 float g2Buffer[samples] = {0};
 float g3Buffer[samples] = {0};
 float r1Buffer[samples] = {0};
@@ -37,6 +37,8 @@ float b1Buffer[samples] = {0};
 float b2Buffer[samples] = {0};
 float g1Buffer[samples] = {0};
 int bufferIndex = 0;
+float maxDistance = 0;
+int currentRangeStart = -1;
 
 // So far just moves at 1 speed
 #define SPEED3 12     // Forward
@@ -85,7 +87,7 @@ void lidarStart(){
     float distance = lidar.getCurrentPoint().distance;
     float angle = lidar.getCurrentPoint().angle;  // 0-360 deg
     if(distance < 3000){
-      handleLED(angle, distance);
+      setRangeDist(angle, distance);
     }
   }
   // Otherwise stop the LIDAR and retry
@@ -110,58 +112,170 @@ float toInches(float d){
   return distanceInches;
 }
 
-void handleLED(float a, float d){
+// Sets the range to see
+void setRangeDist(float a, float d){
     int thresh = 12;
     inches = toInches(d);
-    if(inches > thresh && (a >= 180 && a <= 225)) {
-      digitalWrite(g2, HIGH);
-    } else if(inches < thresh && (a >= 180 && a <= 225)){
-      digitalWrite(g2, LOW);
+    // If in 45-90 angle section, means it will be the 45 degree section (see updateLED function)
+    int rangeStart = (int(a) / 45)*45;
+
+    // If it's finally out of the range, process the maximum distance lidar saw
+    if(rangeStart != currentRangeStart){
+      // >= 0 to make sure lidar is reading >=0 angles and proper data
+      if(currentRangeStart >= 0){
+        updateLED(currentRangeStart, maxDistance, thresh);
+      }
+      // Reset for the next range...
+      currentRangeStart = rangeStart;
+      maxDistance = 0;
     }
-    if(inches > thresh && (a >= 225 && a <= 270)) {
-      digitalWrite(g3, HIGH);
-    } else if(inches < thresh && (a >= 225 && a <= 270)){
-      digitalWrite(g3, LOW);
-    }
-    if(inches > thresh && (a >= 270 && a <= 315)) {
-      digitalWrite(r1, HIGH);
-      Serial.println("I AM ON");
-    } else if(inches < thresh && (a >= 270 && a <= 315)){
-      digitalWrite(r1, LOW);
-    }
-    if(inches > thresh && (a >= 315 && a <= 360)) {
-      digitalWrite(r2, HIGH);
-    } else if(inches < thresh && (a >= 315 && a <= 360)){
-      digitalWrite(r2, LOW);
-    }
-    // Crosses to 0 and goes from 0 to 180
-    if(inches > thresh && (a >= 0 && a <= 45)) {
-      digitalWrite(r3, HIGH);
-    } else if(inches < thresh && (a >= 0 && a <= 45)){
-      digitalWrite(r3, LOW);
-    }
-    if(inches > thresh && (a >= 45 && a <= 90)) {
-      digitalWrite(b1, HIGH);
-    } else if(inches < thresh && (a >= 45 && a <= 90)){
-      digitalWrite(b1, LOW);
-    }
-    if(inches > thresh && (a >= 90 && a <= 135)) {
-      digitalWrite(b2, HIGH);
-    } else if(inches < thresh && (a >= 90 && a <= 135)){
-      digitalWrite(b2, LOW);
-    }
-    if(inches > thresh && (a >= 135 && a <= 179)) {
-      digitalWrite(g1, HIGH);
-    } else if(inches < thresh && (a >= 135 && a <= 179)){
-      digitalWrite(g1, LOW);
+
+    // Starts determining the maximum distance it saw within the current range
+    if(inches > maxDistance){
+      maxDistance = inches;
     }
 }
 
-// Update the 
-void updateBuffer(float buffer[], float value){
-  buffer[bufferIndex % samples] = value;
-  bufferIndex++;
+// If the max distance is higher than thresh, write HIGH to proper LED
+void updateLED(int rangeStart, float maxDistance, int thresh){
+  // Check the range
+  if(rangeStart == 180){
+    if(maxDistance > thresh){
+      digitalWrite(g2, HIGH);
+    } else{
+      digitalWrite(g2, LOW);
+    }
+  }
+  if(rangeStart == 225){
+    if(maxDistance > thresh){
+      digitalWrite(g3, HIGH);
+    } else{
+      digitalWrite(g3, LOW);
+    }
+  }
+  if(rangeStart == 270){
+    if(maxDistance > thresh){
+      digitalWrite(r1, HIGH);
+    } else{
+      digitalWrite(r1, LOW);
+    }
+  }
+  if(rangeStart == 315){
+    if(maxDistance > thresh){
+      digitalWrite(r2, HIGH);
+    } else{
+      digitalWrite(r2, LOW);
+    }
+  }
+  if(rangeStart == 0){
+    if(maxDistance > thresh){
+      digitalWrite(r3, HIGH);
+    } else{
+      digitalWrite(r3, LOW);
+    }
+  }
+  if(rangeStart == 45){
+    if(maxDistance > thresh){
+      digitalWrite(b1, HIGH);
+    } else{
+      digitalWrite(b1, LOW);
+    }
+  }
+  if(rangeStart == 90){
+    if(maxDistance > thresh){
+      digitalWrite(b2, HIGH);
+    } else{
+      digitalWrite(b2, LOW);
+    }
+  }
+  if(rangeStart == 135){
+    if(maxDistance > thresh){
+      digitalWrite(g1, HIGH);
+    } else{
+      digitalWrite(g1, LOW);
+    }
+  }
 }
+
+//// Update corresponding buffers
+//void updateBuffer(float buffer[], float inches){
+//  buffer[bufferIndex % samples] = inches;
+//  bufferIndex++;
+//}
+//
+//float getAverage(float buffer[]){
+//  float sum = 0;
+//  for(int i=0; i < samples; i++){
+//    sum += buffer[i];
+//  }
+//  return sum/samples;
+//}
+
+//   if(a >= 180 && a <= 225) {
+//      updateBuffer(g2Buffer, inches);
+//      if(getAverage(g2Buffer) > thresh){
+//        digitalWrite(g2, HIGH);
+//      } else{
+//        digitalWrite(g2, LOW);
+//      }
+//    }
+//    if(a >= 225 && a <= 270) {
+//      updateBuffer(g3Buffer, inches);
+//      if(getAverage(g3Buffer) > thresh){
+//        digitalWrite(g3, HIGH);
+//      } else{
+//        digitalWrite(g3, LOW);
+//      }
+//    }
+//    if(a >= 270 && a <= 315) {
+//      updateBuffer(r1Buffer, inches);
+//      if(getAverage(r1Buffer) > thresh){
+//        digitalWrite(r1, HIGH);
+//      } else{
+//        digitalWrite(r1, LOW);
+//      }
+//    }
+//    if(a >= 315 && a <= 360) {
+//      updateBuffer(r2Buffer, inches);
+//      if(getAverage(r2Buffer) > thresh){
+//        digitalWrite(r2, HIGH);
+//      } else{
+//        digitalWrite(r2, LOW);
+//      }
+//    }
+//    // Crosses to 0 and goes from 0 to 180
+//    if(a >= 0 && a <= 45) {
+//      updateBuffer(r3Buffer, inches);
+//      if(getAverage(r3Buffer) > thresh){
+//        digitalWrite(r3, HIGH);
+//      } else{
+//        digitalWrite(r3, LOW);
+//      }
+//    }
+//    if(a >= 45 && a <= 90) {
+//      updateBuffer(b1Buffer, inches);
+//      if(getAverage(b1Buffer) > thresh){
+//        digitalWrite(b1, HIGH);
+//      } else{
+//        digitalWrite(b1, LOW);
+//      }
+//    }
+//    if(a >= 90 && a <= 135) {
+//      updateBuffer(b2Buffer, inches);
+//      if(getAverage(b2Buffer) > thresh){
+//        digitalWrite(b2, HIGH);
+//      } else{
+//        digitalWrite(b2, LOW);
+//      }
+//    }
+//    if(a >= 135 && a <= 179) {
+//      updateBuffer(g1Buffer, inches);
+//      if(getAverage(g1Buffer) > thresh){
+//        digitalWrite(g1, HIGH);
+//      } else{
+//        digitalWrite(g1, LOW);
+//      }
+//    }
 
 //      Serial.println("Angle: ");
 //      Serial.println(a);
