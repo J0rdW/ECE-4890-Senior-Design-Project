@@ -3,7 +3,6 @@
 #include <RPLidar.h>
 #define RPLIDAR_MOTOR 3 // The PWM pin for control the speed of RPLIDAR's motor (MOTOCTRL).
 
-float minDistance = 100000;
 float angleAtMinDist = 0;
 int count = 0;
 float angle = 0;
@@ -12,6 +11,7 @@ int section;
 int displayDistance = 1;
 int displayAngle = 1;
 float inches;
+int maxDistance = 0;
 
 #define NO_ACTION 0
 #define STOP 2
@@ -37,7 +37,7 @@ float b1Buffer[samples] = {0};
 float b2Buffer[samples] = {0};
 float g1Buffer[samples] = {0};
 int bufferIndex = 0;
-float maxDistance = 0;
+float minDistance = 0;
 int currentRangeStart = -1;
 
 // So far just moves at 1 speed
@@ -114,170 +114,95 @@ float toInches(float d){
 
 // Sets the range to see
 void setRangeDist(float a, float d){
-    int thresh = 12;
-    inches = toInches(d);
+    int thresh = 24;
+    int maxFluctuation = 2;
+    if(d != 0){
+      inches = toInches(d);
+    }
     // If in 45-90 angle section, means it will be the 45 degree section (see updateLED function)
     int rangeStart = (int(a) / 45)*45;
 
-    // If it's finally out of the range, process the maximum distance lidar saw
+    // If it's finally out of the range, process the minimum distance lidar saw
     if(rangeStart != currentRangeStart){
       // >= 0 to make sure lidar is reading >=0 angles and proper data
       if(currentRangeStart >= 0){
-        updateLED(currentRangeStart, maxDistance, thresh);
+        updateLED(currentRangeStart, maxDistance, minDistance, thresh, maxFluctuation);
       }
       // Reset for the next range...
       currentRangeStart = rangeStart;
+      minDistance = 10000;
       maxDistance = 0;
     }
 
-    // Starts determining the maximum distance it saw within the current range
+    // Starts determining the minimum distance it saw within the current range
+    if(inches < minDistance){
+      minDistance = inches;
+    }
     if(inches > maxDistance){
       maxDistance = inches;
     }
 }
 
 // If the max distance is higher than thresh, write HIGH to proper LED
-void updateLED(int rangeStart, float maxDistance, int thresh){
+void updateLED(int rangeStart, float maxDistance, float minDistance, int thresh, int maxFluctation){
+  int variation = maxDistance - minDistance;
+  
   // Check the range
-  if(rangeStart == 180){
-    if(maxDistance > thresh){
+  if((rangeStart == 180) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(g2, HIGH);
     } else{
       digitalWrite(g2, LOW);
     }
   }
-  if(rangeStart == 225){
-    if(maxDistance > thresh){
+  if((rangeStart == 225) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(g3, HIGH);
     } else{
       digitalWrite(g3, LOW);
     }
   }
-  if(rangeStart == 270){
-    if(maxDistance > thresh){
+  if((rangeStart == 270) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(r1, HIGH);
     } else{
       digitalWrite(r1, LOW);
     }
   }
-  if(rangeStart == 315){
-    if(maxDistance > thresh){
+  if((rangeStart == 315) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(r2, HIGH);
     } else{
       digitalWrite(r2, LOW);
     }
   }
-  if(rangeStart == 0){
-    if(maxDistance > thresh){
+  if((rangeStart == 0) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(r3, HIGH);
     } else{
       digitalWrite(r3, LOW);
     }
   }
-  if(rangeStart == 45){
-    if(maxDistance > thresh){
+  if((rangeStart == 45) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(b1, HIGH);
     } else{
       digitalWrite(b1, LOW);
     }
   }
-  if(rangeStart == 90){
-    if(maxDistance > thresh){
+  if((rangeStart == 90) && (variation < maxFluctation)){
+    if(minDistance > thresh){
       digitalWrite(b2, HIGH);
     } else{
       digitalWrite(b2, LOW);
     }
   }
-  if(rangeStart == 135){
-    if(maxDistance > thresh){
+  if((rangeStart == 135) && (variation < maxFluctation)){
+    Serial.println(minDistance);
+    if(minDistance > thresh){
       digitalWrite(g1, HIGH);
     } else{
       digitalWrite(g1, LOW);
     }
   }
 }
-
-//// Update corresponding buffers
-//void updateBuffer(float buffer[], float inches){
-//  buffer[bufferIndex % samples] = inches;
-//  bufferIndex++;
-//}
-//
-//float getAverage(float buffer[]){
-//  float sum = 0;
-//  for(int i=0; i < samples; i++){
-//    sum += buffer[i];
-//  }
-//  return sum/samples;
-//}
-
-//   if(a >= 180 && a <= 225) {
-//      updateBuffer(g2Buffer, inches);
-//      if(getAverage(g2Buffer) > thresh){
-//        digitalWrite(g2, HIGH);
-//      } else{
-//        digitalWrite(g2, LOW);
-//      }
-//    }
-//    if(a >= 225 && a <= 270) {
-//      updateBuffer(g3Buffer, inches);
-//      if(getAverage(g3Buffer) > thresh){
-//        digitalWrite(g3, HIGH);
-//      } else{
-//        digitalWrite(g3, LOW);
-//      }
-//    }
-//    if(a >= 270 && a <= 315) {
-//      updateBuffer(r1Buffer, inches);
-//      if(getAverage(r1Buffer) > thresh){
-//        digitalWrite(r1, HIGH);
-//      } else{
-//        digitalWrite(r1, LOW);
-//      }
-//    }
-//    if(a >= 315 && a <= 360) {
-//      updateBuffer(r2Buffer, inches);
-//      if(getAverage(r2Buffer) > thresh){
-//        digitalWrite(r2, HIGH);
-//      } else{
-//        digitalWrite(r2, LOW);
-//      }
-//    }
-//    // Crosses to 0 and goes from 0 to 180
-//    if(a >= 0 && a <= 45) {
-//      updateBuffer(r3Buffer, inches);
-//      if(getAverage(r3Buffer) > thresh){
-//        digitalWrite(r3, HIGH);
-//      } else{
-//        digitalWrite(r3, LOW);
-//      }
-//    }
-//    if(a >= 45 && a <= 90) {
-//      updateBuffer(b1Buffer, inches);
-//      if(getAverage(b1Buffer) > thresh){
-//        digitalWrite(b1, HIGH);
-//      } else{
-//        digitalWrite(b1, LOW);
-//      }
-//    }
-//    if(a >= 90 && a <= 135) {
-//      updateBuffer(b2Buffer, inches);
-//      if(getAverage(b2Buffer) > thresh){
-//        digitalWrite(b2, HIGH);
-//      } else{
-//        digitalWrite(b2, LOW);
-//      }
-//    }
-//    if(a >= 135 && a <= 179) {
-//      updateBuffer(g1Buffer, inches);
-//      if(getAverage(g1Buffer) > thresh){
-//        digitalWrite(g1, HIGH);
-//      } else{
-//        digitalWrite(g1, LOW);
-//      }
-//    }
-
-//      Serial.println("Angle: ");
-//      Serial.println(a);
-//      Serial.println("Distance: ");
-//      Serial.println(d);
