@@ -1,14 +1,19 @@
-//************** RECEIEVER CODE FOR SERVO CONTROL (ARDUINO NANO PINS)  **************//
+//************** RX CODE FOR SERVO CONTROL (ARDUINO NANO PINS)  **************//
 
 #include <SPI.h>
 #include <Servo.h>
 #include "RF24.h" // This is the RF24 library that may need to be installed through the Manage Libraries feature in the IDE.
-
 #include <Servo.h>//Include and create a servo object for controlling the servo motor
+
+//joystick1 controls two motors (1 & 2)
 Servo servo1;
 Servo servo2;
+
+//joystick2 controls two motors (3 & 4)
 Servo servo3;
 Servo servo4;
+
+//joystick3 copntrols two motors (5 & 6)
 Servo servo5;
 Servo servo6;
 
@@ -17,53 +22,84 @@ RF24 radio(9, 10);//Create a commuications object for talking to the NRF24L01
 const uint64_t send_pipe=0xB01DFACECEL; //These are just arbitrary 64bit numbers to use as pipe identifiers
 const uint64_t recv_pipe=0xDEADBEEFF1L; //They must be the same on both ends of the communciations
 
-// Codes for actions
-#define NO_ACTION 21
-#define BOTH 20
-// Servos
-#define Servo1XF 1
-#define Servo1XR 2
-#define Servo1stop 3
-#define Servo2YF 5
-#define Servo2YR 6
-#define Servo2stop 7
-#define Servo3XF 8
-#define Servo3XR 9
-#define Servo3stop 10
-#define Servo4YF 11
-#define Servo4YR 12
-#define Servo4stop 13
-#define Servo5XF 14
-#define Servo5XR 15
-#define Servo5stop 16
-#define Servo6YF 17
-#define Servo6YR 18
-#define Servo6stop 19
+//Codes for actions
+#define NO_ACTION 0
+#define BOTH 19
+
+//joystick1 action
+//motor1 x-direction
+#define motor1XF 1
+#define motor1XR 2
+#define servo1stop 3
+
+//motor2 y-direction
+#define motor2YF 4
+#define motor2YR 5
+#define servo2stop 6
+
+//joystick2 action
+//motor2 x-direction
+#define motor3XF 7
+#define motor3XR 8
+#define servo3stop 9
+
+//motor2 y-direction
+#define motor4YF 10
+#define motor4YR 11
+#define servo4stop 12
+
+//joystcik3 action
+//motor3 motor5
+#define motor5XF 13
+#define motor5XR 14
+#define servo5stop 15
+
+//servo3 motor6
+#define motor6YF 16
+#define motor6YR 17
+#define servo6stop 18
 
 
 
 // Define buttons and joystick pins on ARDUINO NANO
-#define SERVO1_PIN 3
-#define SERVO2_PIN 5
-#define SERVO3_PIN 4
-#define SERVO4_PIN 7
-#define SERVO5_PIN 11
-#define SERVO6_PIN 12
+#define SERVO1_PIN 3 //good
+#define SERVO2_PIN 5 //good
+#define SERVO3_PIN 4 //good
+#define SERVO4_PIN 7 //good
+#define SERVO5_PIN 11 //good
+#define SERVO6_PIN 12 //tbd
 
 // Variables for servo
-bool MoveX_F1=false;
-bool MoveX_R1= false;
-bool MoveY_F2= false;
-bool MoveY_R2= false;
-bool MoveX_F3= false;
-bool MoveX_R3= false;
-bool MoveY_F4= false;
-bool MoveY_R4= false;
-bool MoveX_F5= false;
-bool MoveX_R5= false;
-bool MoveY_F6= false;
-bool MoveY_R6= false;
-float position=90;  // Starts at 90 degrees
+bool motor1X_F1= false;
+bool motor1X_R1= false;
+
+bool motor2Y_F2= false;
+bool motor2Y_R2= false;
+
+bool motor3X_F3= false;
+bool motor3X_R3= false;
+
+bool motor4Y_F4= false;
+bool motor4Y_R4= false;
+
+bool motor5X_F5= false;
+bool motor5X_R5= false;
+
+bool motor6Y_F6= false;
+bool motor6Y_R6= false;
+
+float position1=90;  // Starts at 90 degrees
+float position2=90;  // Starts at 90 degrees
+float position3=90;  // Starts at 90 degrees
+float position4=90;  // Starts at 90 degrees
+float position5=90;  // Starts at 90 degrees
+float position6=90;  // Starts at 90 degrees
+float position7=90;  // Starts at 90 degrees
+float position8=90;  // Starts at 90 degrees
+float position9=90;  // Starts at 90 degrees
+float position10=90;  // Starts at 90 degrees
+float position11=90;  // Starts at 90 degrees
+float position12=90;  // Starts at 90 degrees
 int direction=1;
 
 void setup()
@@ -76,17 +112,20 @@ void setup()
   radio.openWritingPipe(send_pipe);//Thses are the reverse of the transmit code.
   radio.openReadingPipe(1,recv_pipe);
   radio.startListening();//Give the module a kick
-  servo1.attach(SERVO1_PIN);//Spool up the servo
-  servo2.attach(SERVO2_PIN);//Spool up the servo
-  servo3.attach(SERVO3_PIN);//Spool up the servo
-  servo4.attach(SERVO4_PIN);//Spool up the servo
-  servo5.attach(SERVO5_PIN);//Spool up the servo
-  servo6.attach(SERVO6_PIN);//Spool up the servo
+  
+  servo1.attach(SERVO1_PIN);//Spool up the servo -pin3
+  servo2.attach(SERVO2_PIN);//Spool up the servo -pin5
+  
+  servo3.attach(SERVO3_PIN);//Spool up the servo -pin4
+  servo4.attach(SERVO4_PIN);//Spool up the servo -pin7
+  
+  servo5.attach(SERVO5_PIN);//Spool up the servo -pin11
+  servo6.attach(SERVO6_PIN);//Spool up the servo -pin12
 
 
 }
 
-// Joystick1 Servo1
+// JOYSTICK1 Servo1
 void loop()
 {
   unsigned long motor_code=NO_ACTION;
@@ -95,303 +134,486 @@ void loop()
   {
       radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
 
-    // Check motor_code 
-    if(motor_code==Servo1XF)
+    // Check ArmServoCodeTX 
+    if(motor_code==servo1stop)
     {
-      Serial.println("THE MOTOR HAS STARTED");
-      MoveX_F1=true;
-      MoveX_R1=false;
+      Serial.println("Servo MOTOR1 has stopped");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    } 
+    else if(motor_code==motor1XF)
+    {
+      Serial.println("Servo MOTOR1 forward X-direction");
+      motor1X_F1= true;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
     }
-    else if(motor_code==Servo1stop)
+     
+    //REMOVED motor_code==BOTH
+    
+    else if(motor_code==motor1XR)
     {
-      Serial.println("THE MOTOR HAS STOPPED");
-      MoveX_F1=false;
-      MoveX_R1=false;
+      Serial.println("Servo MOTOR1 reverse in X-direction");
+      motor1X_F1= false;
+      motor1X_R1= true;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
     }
-    else if(motor_code==BOTH)
+
+    else if(motor_code==servo2stop)
     {
-      Serial.println("Both buttons pushed");
-      MoveX_F1=false;
-      MoveX_R1=false;
+      Serial.println("Servo MOTOR2 has stopped");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
     }
-    else if(motor_code==Servo1XR)
+
+    else if(motor_code==motor2YF)
     {
-      Serial.println("In reverse");
-      MoveX_R1=true;
-      MoveX_F1=false;
+      Serial.println("Servo MOTOR2 forward in Y-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= true;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    
+    else if(motor_code==motor2YR)
+    {
+      Serial.println("Servo MOTOR2 reverse in Y-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= true;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    
+    else if(motor_code==servo3stop)
+    {
+      Serial.println("Servo MOTOR3 has stopped");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor3XF)
+    {
+      Serial.println("Servo MOTOR3 forward in X-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= true;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor3XR)
+    {
+      Serial.println("Servo MOTOR3 reverse in X-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= true;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==servo4stop)
+    {
+      Serial.println("Servo MOTOR4 has stopped");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor4YF)
+    {
+      Serial.println("Servo MOTOR4 forward in Y-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= true;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor4YR)
+    {
+      Serial.println("Servo MOTOR4 reverse in Y-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= true;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==servo5stop)
+    {
+      Serial.println("Servo MOTOR5 has stopped");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor5XF)
+    {
+      Serial.println("Servo MOTOR5 forward in X-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= true;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor5XR)
+    {
+      Serial.println("Servo MOTOR5 reverse in X-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= true;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==servo6stop)
+    {
+      Serial.println("Servo MOTOR6 has stopped");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor6YF)
+    {
+      Serial.println("Servo MOTOR6 forward in Y-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= true;
+      motor6Y_R6= false;
+    }
+    else if(motor_code==motor6YR)
+    {
+      Serial.println("Servo MOTOR6 reverse in Y-direction");
+      motor1X_F1= false;
+      motor1X_R1= false;
+      
+      motor2Y_F2= false;
+      motor2Y_R2= false;
+    
+      motor3X_F3= false;
+      motor3X_R3= false;
+    
+      motor4Y_F4= false;
+      motor4Y_R4= false;
+    
+      motor5X_F5= false;
+      motor5X_R5= false;
+    
+      motor6Y_F6= false;
+      motor6Y_R6= true;
     }
   }
-  // FORWARD (button1)
-  if(MoveX_F1)
+
+  
+  
+  // MOTOR1 forward x-direction (button1)
+  if(motor1X_F1)
   {
-      position += 3.0f;   // Add 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo1.write(position);
-      MoveX_F1 = false;  // Stop so servo doesn't keep going
+      position1 += 6.0f;   // Add 5 degrees to initial position
+      position1 = constrain(position1, 0, 270);  // Ensure position is within bounds
+      servo1.write(position1);
+      motor1X_F1 = false;  // Stop so servo doesn't keep going
   }
   
-  // REVERSE (button2)
-  if(MoveX_R1)
+  // MOTOR1 reverse x-direction (button2)
+  if(motor1X_R1)
   {
-      position -= 3.0f;   // Subtract 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo1.write(position);
-      MoveX_R1 = false;  // Stop so servo doesn't keep going
+      position2 -= 6.0f;   // Subtract 5 degrees to initial position
+      position2 = constrain(position2, 0, 270);  // Ensure position is within bounds
+      servo1.write(position2);
+      motor1X_R1 = false;  // Stop so servo doesn't keep going
   }
-
-// // Joystick1 Servo2
-
-
-  if( radio.available())//Keep checking on each loop to see if any data has come in
+  // MOTOR2 forward y-direction
+  if(motor2Y_F2)
   {
-      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
-
-    // Check motor_code 
-    if(motor_code==Servo2YF)
-    {
-      Serial.println("THE MOTOR HAS STARTED");
-      MoveY_F2=true;
-      MoveY_R2=false;
-    }
-    else if(motor_code==Servo2stop)
-    {
-      Serial.println("THE MOTOR HAS STOPPED");
-      MoveY_F2=false;
-      MoveY_R2=false;
-    }
-    else if(motor_code==BOTH)
-    {
-      Serial.println("Both buttons pushed");
-      MoveY_F2=false;
-      MoveY_R2=false;
-    }
-    else if(motor_code==Servo2YR)
-    {
-      Serial.println("In reverse");
-      MoveY_R2=true;
-      MoveY_F2=false;
-    }
-  }
-  // FORWARD (button1)
-  if(MoveY_F2)
-  {
-      position += 3.0f;   // Add 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo2.write(position);
-      MoveY_F2 = false;  // Stop so servo doesn't keep going
+      position3 += 6.0f;   // Add 5 degrees to initial position
+      position3 = constrain(position3, 0, 270);  // Ensure position is within bounds
+      servo2.write(position3);
+      motor2Y_F2 = false;  // Stop so servo doesn't keep going
   }
   
-  // REVERSE (button2)
-  if(MoveY_R2)
+  // MOTOR2 reverse y-direction (button2)
+  if(motor2Y_R2)
   {
-      position -= 3.0f;   // Subtract 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo2.write(position);
-      MoveY_R2 = false;  // Stop so servo doesn't keep going
+      position4 -= 6.0f;   // Subtract 5 degrees to initial position
+      position4 = constrain(position4, 0, 270);  // Ensure position is within bounds
+      servo2.write(position4);
+      motor2Y_R2 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor3X_F3)
+  {
+      position5 += 6.0f;   // Subtract 5 degrees to initial position
+      position5 = constrain(position5, 0, 270);  // Ensure position is within bounds
+      servo3.write(position5);
+      motor3X_F3 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor3X_R3)
+  {
+      position6 -= 6.0f;   // Subtract 5 degrees to initial position
+      position6 = constrain(position6, 0, 270);  // Ensure position is within bounds
+      servo3.write(position6);
+      motor3X_R3 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor4Y_F4)
+  {
+      position7 += 6.0f;   // Subtract 5 degrees to initial position
+      position7 = constrain(position7, 0, 270);  // Ensure position is within bounds
+      servo4.write(position7);
+      motor4Y_F4 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor4Y_R4)
+  {
+      position8 -= 6.0f;   // Subtract 5 degrees to initial position
+      position8 = constrain(position8, 0, 270);  // Ensure position is within bounds
+      servo4.write(position8);
+      motor4Y_R4 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor5X_F5)
+  {
+      position9 += 6.0f;   // Subtract 5 degrees to initial position
+      position9 = constrain(position9, 0, 270);  // Ensure position is within bounds
+      servo5.write(position9);
+      motor5X_F5 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor5X_R5)
+  {
+      position10 -= 6.0f;   // Subtract 5 degrees to initial position
+      position10 = constrain(position10, 0, 270);  // Ensure position is within bounds
+      servo5.write(position10);
+      motor5X_R5 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor6Y_F6)
+  {
+      position11 += 6.0f;   // Subtract 5 degrees to initial position
+      position11 = constrain(position11, 0, 270);  // Ensure position is within bounds
+      servo6.write(position11);
+      motor6Y_F6 = false;  // Stop so servo doesn't keep going
+  }
+  if(motor6Y_R6)
+  {
+      position12 -= 6.0f;   // Subtract 5 degrees to initial position
+      position12 = constrain(position12, 0, 270);  // Ensure position is within bounds
+      servo6.write(position12);
+      motor6Y_R6 = false;  // Stop so servo doesn't keep going
   }
 
-// Joystick2 Servo3
-  if( radio.available())//Keep checking on each loop to see if any data has come in
-  {
-      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
-
-    // Check motor_code 
-    if(motor_code==Servo3XF)
-    {
-      Serial.println("THE MOTOR HAS STARTED");
-      MoveX_F3=true;
-      MoveX_R3=false;
-    }
-    else if(motor_code==Servo3stop)
-    {
-      Serial.println("THE MOTOR HAS STOPPED");
-      MoveX_F3=false;
-      MoveX_R3=false;
-    }
-    else if(motor_code==BOTH)
-    {
-      Serial.println("Both buttons pushed");
-      MoveX_F3=false;
-      MoveX_R3=false;
-    }
-    else if(motor_code==Servo3XR)
-    {
-      Serial.println("In reverse");
-      MoveX_R3=true;
-      MoveX_F3=false;
-    }
-  }
-  // FORWARD (button1)
-  if(MoveX_F3)
-  {
-      position += 3.0f;   // Add 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo3.write(position);
-      MoveX_F3 = false;  // Stop so servo doesn't keep going
-  }
   
-  // REVERSE (button2)
-  if(MoveX_R3)
-  {
-      position -= 3.0f;   // Subtract 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo3.write(position);
-      MoveX_R3 = false;  // Stop so servo doesn't keep going
-  }
-
-
-// Joystick 2 Servo 4
-
-  if( radio.available())//Keep checking on each loop to see if any data has come in
-  {
-      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
-
-    // Check motor_code 
-    if(motor_code==Servo4YF)
-    {
-      Serial.println("THE MOTOR HAS STARTED");
-      MoveY_F4=true;
-      MoveY_R4=false;
-    }
-    else if(motor_code==Servo4stop)
-    {
-      Serial.println("THE MOTOR HAS STOPPED");
-      MoveY_F4=false;
-      MoveY_R4=false;
-    }
-    else if(motor_code==BOTH)
-    {
-      Serial.println("Both buttons pushed");
-      MoveY_F4=false;
-      MoveY_R4=false;
-    }
-    else if(motor_code==Servo4YR)
-    {
-      Serial.println("In reverse");
-      MoveY_R4=true;
-      MoveY_F4=false;
-    }
-  }
-  // FORWARD (button1)
-  if(MoveY_F4)
-  {
-      position += 3.0f;   // Add 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo4.write(position);
-      MoveY_F4 = false;  // Stop so servo doesn't keep going
-  }
-  
-  // REVERSE (button2)
-  if(MoveY_R4)
-  {
-      position -= 3.0f;   // Subtract 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo4.write(position);
-      MoveY_R4 = false;  // Stop so servo doesn't keep going
-  }
-
-
-  // Joystick 3 Servo 5
-
-
-  if( radio.available())//Keep checking on each loop to see if any data has come in
-  {
-      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
-
-    // Check motor_code 
-    if(motor_code==Servo5XF)
-    {
-      Serial.println("THE MOTOR HAS STARTED");
-      MoveX_F5=true;
-      MoveX_R5=false;
-    }
-    else if(motor_code==Servo5stop)
-    {
-      Serial.println("THE MOTOR HAS STOPPED");
-      MoveX_F5=false;
-      MoveX_R5=false;
-    }
-    else if(motor_code==BOTH)
-    {
-      Serial.println("Both buttons pushed");
-      MoveX_F5=false;
-      MoveX_R5=false;
-    }
-    else if(motor_code==Servo5XR)
-    {
-      Serial.println("In reverse");
-      MoveX_R5=true;
-      MoveX_F5=false;
-    }
-  }
-  // FORWARD (button1)
-  if(MoveX_F5)
-  {
-      position += 3.0f;   // Add 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo5.write(position);
-      MoveX_F5 = false;  // Stop so servo doesn't keep going
-  }
-  
-  // REVERSE (button2)
-  if(MoveX_R5)
-  {
-      position -= 3.0f;   // Subtract 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo5.write(position);
-      MoveX_R5 = false;  // Stop so servo doesn't keep going
-  }
-
-
-
-  // Joystick 3 Servo 6
-
-
-  if( radio.available())//Keep checking on each loop to see if any data has come in
-  {
-      radio.read(&motor_code, sizeof(unsigned long));//Stuff the incoming packet into the motor_code variable
-
-    // Check motor_code 
-    if(motor_code==Servo6YF)
-    {
-      Serial.println("THE MOTOR HAS STARTED");
-      MoveY_F6=true;
-      MoveY_R6=false;
-    }
-    else if(motor_code==Servo6stop)
-    {
-      Serial.println("THE MOTOR HAS STOPPED");
-      MoveY_F6=false;
-      MoveY_R6=false;
-    }
-    else if(motor_code==BOTH)
-    {
-      Serial.println("Both buttons pushed");
-      MoveY_F6=false;
-      MoveY_R6=false;
-    }
-    else if(motor_code==Servo6YR)
-    {
-      Serial.println("In reverse");
-      MoveY_R6=true;
-      MoveY_F6=false;
-    }
-  }
-  // FORWARD (button1)
-  if(MoveY_F6)
-  {
-      position += 3.0f;   // Add 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo6.write(position);
-      MoveY_F6 = false;  // Stop so servo doesn't keep going
-  }
-  
-  // REVERSE (button2)
-  if(MoveY_R6)
-  {
-      position -= 3.0f;   // Subtract 5 degrees to initial position
-      position = constrain(position, 0, 270);  // Ensure position is within bounds
-      servo6.write(position);
-      MoveY_R6 = false;  // Stop so servo doesn't keep going
-  }
 }
