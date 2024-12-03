@@ -89,17 +89,12 @@ bool motor6Y_F6= false;
 bool motor6Y_R6= false;
 
 float position1=90;  // Starts at 90 degrees
-float position2=90;  // Starts at 90 degrees
 float position3=90;  // Starts at 90 degrees
-float position4=90;  // Starts at 90 degrees
 float position5=90;  // Starts at 90 degrees
-float position6=90;  // Starts at 90 degrees
 float position7=90;  // Starts at 90 degrees
-float position8=90;  // Starts at 90 degrees
 float position9=90;  // Starts at 90 degrees
-float position10=90;  // Starts at 90 degrees
 float position11=90;  // Starts at 90 degrees
-float position12=90;  // Starts at 90 degrees
+
 int direction=1;
 
 void setup()
@@ -122,7 +117,7 @@ void setup()
   servo5.attach(SERVO5_PIN);//Spool up the servo -pin11
   servo6.attach(SERVO6_PIN);//Spool up the servo -pin12
 
-
+  delay(5000);
 }
 
 // JOYSTICK1 Servo1
@@ -527,24 +522,31 @@ void loop()
   // MOTOR1 forward x-direction (button1)
   if(motor1X_F1)
   {
-      position1 += 6.0f;   // Add 5 degrees to initial position
+      position1 += 10.0f;   // Add 5 degrees to initial position
       position1 = constrain(position1, 0, 270);  // Ensure position is within bounds
       servo1.write(position1);
       motor1X_F1 = false;  // Stop so servo doesn't keep going
+      Serial.println("moving F help...........");
+      Serial.println(position1);
+      delay(30);
+      
   }
   
   // MOTOR1 reverse x-direction (button2)
   if(motor1X_R1)
   {
-      position2 -= 6.0f;   // Subtract 5 degrees to initial position
-      position2 = constrain(position2, 0, 270);  // Ensure position is within bounds
-      servo1.write(position2);
+      position1 -= 10.0f;   // Subtract 5 degrees to initial position
+      position1 = constrain(position1, 0, 270);  // Ensure position is within bounds
+      servo1.write(position1);
       motor1X_R1 = false;  // Stop so servo doesn't keep going
+      Serial.println("moving R help...........");
+      Serial.println(position1);
+      delay(30);
   }
   // MOTOR2 forward y-direction
   if(motor2Y_F2)
   {
-      position3 += 6.0f;   // Add 5 degrees to initial position
+      position3 += 10.0f;   // Add 5 degrees to initial position
       position3 = constrain(position3, 0, 270);  // Ensure position is within bounds
       servo2.write(position3);
       motor2Y_F2 = false;  // Stop so servo doesn't keep going
@@ -553,9 +555,9 @@ void loop()
   // MOTOR2 reverse y-direction (button2)
   if(motor2Y_R2)
   {
-      position4 -= 6.0f;   // Subtract 5 degrees to initial position
-      position4 = constrain(position4, 0, 270);  // Ensure position is within bounds
-      servo2.write(position4);
+      position3 -= 10.0f;   // Subtract 5 degrees to initial position
+      position3 = constrain(position3, 0, 270);  // Ensure position is within bounds
+      servo2.write(position3);
       motor2Y_R2 = false;  // Stop so servo doesn't keep going
   }
   if(motor3X_F3)
@@ -567,51 +569,51 @@ void loop()
   }
   if(motor3X_R3)
   {
-      position6 -= 6.0f;   // Subtract 5 degrees to initial position
-      position6 = constrain(position6, 0, 270);  // Ensure position is within bounds
-      servo3.write(position6);
+      position5 -= 10.0f;   // Subtract 5 degrees to initial position
+      position5 = constrain(position5, 0, 270);  // Ensure position is within bounds
+      servo3.write(position5);
       motor3X_R3 = false;  // Stop so servo doesn't keep going
   }
   if(motor4Y_F4)
   {
-      position7 += 6.0f;   // Subtract 5 degrees to initial position
+      position7 += 10.0f;   // Subtract 5 degrees to initial position
       position7 = constrain(position7, 0, 270);  // Ensure position is within bounds
       servo4.write(position7);
       motor4Y_F4 = false;  // Stop so servo doesn't keep going
   }
   if(motor4Y_R4)
   {
-      position8 -= 6.0f;   // Subtract 5 degrees to initial position
-      position8 = constrain(position8, 0, 270);  // Ensure position is within bounds
-      servo4.write(position8);
+      position7 -= 10.0f;   // Subtract 5 degrees to initial position
+      position7 = constrain(position7, 0, 270);  // Ensure position is within bounds
+      servo4.write(position7);
       motor4Y_R4 = false;  // Stop so servo doesn't keep going
   }
   if(motor5X_F5)
   {
-      position9 += 6.0f;   // Subtract 5 degrees to initial position
+      position9 += 10.0f;   // Subtract 5 degrees to initial position
       position9 = constrain(position9, 0, 270);  // Ensure position is within bounds
       servo5.write(position9);
       motor5X_F5 = false;  // Stop so servo doesn't keep going
   }
   if(motor5X_R5)
   {
-      position10 -= 6.0f;   // Subtract 5 degrees to initial position
-      position10 = constrain(position10, 0, 270);  // Ensure position is within bounds
-      servo5.write(position10);
+      position9 -= 10.0f;   // Subtract 5 degrees to initial position
+      position9 = constrain(position9, 0, 270);  // Ensure position is within bounds
+      servo5.write(position9);
       motor5X_R5 = false;  // Stop so servo doesn't keep going
   }
   if(motor6Y_F6)
   {
-      position11 += 6.0f;   // Subtract 5 degrees to initial position
+      position11 += 10.0f;   // Subtract 5 degrees to initial position
       position11 = constrain(position11, 0, 270);  // Ensure position is within bounds
       servo6.write(position11);
       motor6Y_F6 = false;  // Stop so servo doesn't keep going
   }
   if(motor6Y_R6)
   {
-      position12 -= 6.0f;   // Subtract 5 degrees to initial position
-      position12 = constrain(position12, 0, 270);  // Ensure position is within bounds
-      servo6.write(position12);
+      position11 -= 10.0f;   // Subtract 5 degrees to initial position
+      position11 = constrain(position11, 0, 270);  // Ensure position is within bounds
+      servo6.write(position11);
       motor6Y_R6 = false;  // Stop so servo doesn't keep going
   }
 
