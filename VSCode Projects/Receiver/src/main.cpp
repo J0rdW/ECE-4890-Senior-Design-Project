@@ -8,19 +8,19 @@ const uint64_t send_pipe=0xB01DFACECEL; // These are just arbitrary 64-bit numbe
 const uint64_t recv_pipe=0xDEADBEEFF1L; // They must be the same on both ends of the communciations
 
 // define codes for actions
-#define NO_ACTION 0
-#define SPEED1 10
-#define SPEED2 11
-#define SPEED3 12
-#define STOP 2
+#define NO_ACTION 19
+#define SPEED1 22
+#define SPEED2 23
+#define SPEED3 24
+#define STOP 20
 #define BOTH 3
-#define REVERSE 13
-#define REVERSE2 14
-#define REVERSE3 15
-#define RIGHTMOTORSTOP 16
-#define LEFTMOTORSTOP 17
+#define REVERSE 25
+#define REVERSE2 26
+#define REVERSE3 27
+#define R_STOP 28
+#define L_STOP 29
 
-// define Motor A connections
+// define Motor A connections (pin numbers so repeats are ok)
 #define F_PWM1 3
 #define R_PWM1 2
  
@@ -79,7 +79,7 @@ int maxDistance = 0;
 int thresh = 24;  // Threshold in inches for when the LED should light up.
 int maxFluctuation = 2; // The maximum fluctuation before being able to light an LED.
 
-#define samples 10
+#define samples 10  // Number of samples to take before determining if the
 float g2Buffer[samples] = {0};
 float g3Buffer[samples] = {0};
 float r1Buffer[samples] = {0};
@@ -100,6 +100,7 @@ void printData();
 void lidarStart();
 void lidarStop();
 void setRangeDist(float angle, float distance);
+void updateLED(int rangeStart, float maxDistance, float minDistance, int thresh, int maxFluctation);
 
 
 void setup() {
@@ -130,7 +131,7 @@ unsigned long send_code=NO_ACTION;
 
 void loop() {
   checkMotor();
-  processLidar();
+  // processLidar();
 }
 
 void processLidar(){
@@ -262,7 +263,7 @@ void checkMotor(){
       radio.read(&motor_code, sizeof(unsigned long)); //Stuff the incoming packet into the motor_code variable
       //Serial.println(motor_code);
     // Check each "motor_code" 
-    if(motor_code==RIGHTMOTORSTOP){
+    if(motor_code==R_STOP){
       motor_fw=false;
       motor_bw=false;
       motor_fw2 = false;
@@ -273,7 +274,7 @@ void checkMotor(){
       motor_right_stop = true;
       motor_left_stop = false;
     }
-    if(motor_code==LEFTMOTORSTOP){
+    if(motor_code==L_STOP){
       Serial.println("LEFT Go vrrroomm/RIGHT Go mmmmm");
       motor_fw=false;
       motor_bw=false;
