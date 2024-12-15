@@ -196,7 +196,7 @@ void loop()
       motor6Y_F6= false;
       motor6Y_R6= false;
     }
-
+// I am turn of the rest of the servos blow this 
     else if(motor_code==servo2stop)
     {
       Serial.println("Servo MOTOR2 has stopped");
@@ -225,7 +225,7 @@ void loop()
       motor1X_F1= false;
       motor1X_R1= false;
       
-      motor2Y_F2= true;
+      motor2Y_F2= false; // changed on 12/4 to false
       motor2Y_R2= false;
     
       motor3X_F3= false;
@@ -248,7 +248,7 @@ void loop()
       motor1X_R1= false;
       
       motor2Y_F2= false;
-      motor2Y_R2= true;
+      motor2Y_R2= false; // changed on 12/4 to false
     
       motor3X_F3= false;
       motor3X_R3= false;
@@ -293,7 +293,7 @@ void loop()
       motor2Y_F2= false;
       motor2Y_R2= false;
     
-      motor3X_F3= true;
+      motor3X_F3= false; // changed on 12/4 to false
       motor3X_R3= false;
     
       motor4Y_F4= false;
@@ -315,7 +315,7 @@ void loop()
       motor2Y_R2= false;
     
       motor3X_F3= false;
-      motor3X_R3= true;
+      motor3X_R3= false; // changed on 12/4 to false
     
       motor4Y_F4= false;
       motor4Y_R4= false;
@@ -359,7 +359,7 @@ void loop()
       motor3X_F3= false;
       motor3X_R3= false;
     
-      motor4Y_F4= true;
+      motor4Y_F4= false; // changed on 12/4 to false
       motor4Y_R4= false;
     
       motor5X_F5= false;
@@ -381,7 +381,7 @@ void loop()
       motor3X_R3= false;
     
       motor4Y_F4= false;
-      motor4Y_R4= true;
+      motor4Y_R4= false; // changed on 12/4 to false
     
       motor5X_F5= false;
       motor5X_R5= false;
@@ -425,7 +425,7 @@ void loop()
       motor4Y_F4= false;
       motor4Y_R4= false;
     
-      motor5X_F5= true;
+      motor5X_F5= false; // changed on 12/4 to false
       motor5X_R5= false;
     
       motor6Y_F6= false;
@@ -447,7 +447,7 @@ void loop()
       motor4Y_R4= false;
     
       motor5X_F5= false;
-      motor5X_R5= true;
+      motor5X_R5= false; // changed on 12/4 to false
     
       motor6Y_F6= false;
       motor6Y_R6= false;
@@ -491,7 +491,7 @@ void loop()
       motor5X_F5= false;
       motor5X_R5= false;
     
-      motor6Y_F6= true;
+      motor6Y_F6= false; // changed on 12/4 to false
       motor6Y_R6= false;
     }
     else if(motor_code==motor6YR)
@@ -513,7 +513,7 @@ void loop()
       motor5X_R5= false;
     
       motor6Y_F6= false;
-      motor6Y_R6= true;
+      motor6Y_R6= false; // changed on 12/4 to false
     }
   }
 
