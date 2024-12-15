@@ -91,7 +91,7 @@ bool motor6Y_R6= false;
 float position1=60;  // Starts at 90 degrees
 float position2=110;  // Starts at 90 degrees
 float position3=120;  // Starts at 90 degrees
-float position4=90;  // Starts at 90 degrees
+float position4=70;  // Starts at 90 degrees
 float position5=90;  // Starts at 90 degrees
 float position6=90;  // Starts at 90 degrees
 
@@ -591,7 +591,7 @@ void loop()
   if(motor4Y_F4)
   {
       position4 += 5.0f;   // Subtract 5 degrees to initial position
-      position4 = constrain(position4, 20, 190);  // Ensure position is within bounds
+      position4 = constrain(position4, 40, 150);  // Ensure position is within bounds
       servo4.write(position4);
       motor4Y_F4 = false;  // Stop so servo doesn't keep going
       Serial.println(position4); // shows the position on serial mon
@@ -599,7 +599,7 @@ void loop()
   if(motor4Y_R4)
   {
       position4 -= 5.0f;   // Subtract 5 degrees to initial position
-      position4 = constrain(position4, 0, 270);  // Ensure position is within bounds
+      position4 = constrain(position4, 40, 150);  // Ensure position is within bounds
       servo4.write(position4);
       motor4Y_R4 = false;  // Stop so servo doesn't keep going
       Serial.println(position4); // shows the position on serial mon
