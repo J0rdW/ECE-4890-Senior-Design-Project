@@ -88,11 +88,11 @@ bool motor5X_R5= false;
 bool motor6Y_F6= false;
 bool motor6Y_R6= false;
 
-float position1=60;  // Starts at 90 degrees
-float position2=110;  // Starts at 90 degrees
-float position3=120;  // Starts at 90 degrees
-float position4=70;  // Starts at 90 degrees
-float position5=90;  // Starts at 90 degrees
+float position1=60;  // Starts at 60 degrees
+float position2=110;  // Starts at 110 degrees
+float position3=120;  // Starts at 120 degrees
+float position4=70;  // Starts at 70 degrees
+float position5=140;  // Starts at 140 degrees
 float position6=90;  // Starts at 90 degrees
 
 int direction=1;
@@ -607,7 +607,7 @@ void loop()
   if(motor5X_F5)
   {
       position5 += 5.0f;   // Subtract 5 degrees to initial position
-      position5 = constrain(position5, 0, 270);  // Ensure position is within bounds
+      position5 = constrain(position5, 105, 180);  // Ensure position is within bounds
       servo5.write(position5);
       motor5X_F5 = false;  // Stop so servo doesn't keep going
       Serial.println(position5); // shows the position on serial mon
@@ -615,7 +615,7 @@ void loop()
   if(motor5X_R5)
   {
       position5 -= 5.0f;   // Subtract 5 degrees to initial position
-      position5 = constrain(position5, 0, 270);  // Ensure position is within bounds
+      position5 = constrain(position5, 105, 180);  // Ensure position is within bounds
       servo5.write(position5);
       motor5X_R5 = false;  // Stop so servo doesn't keep going
       Serial.println(position5); // shows the position on serial mon
@@ -623,7 +623,7 @@ void loop()
   if(motor6Y_F6)
   {
       position6 += 5.0f;   // Subtract 5 degrees to initial position
-      position6 = constrain(position6, 0, 270);  // Ensure position is within bounds
+      position6 = constrain(position6, 0, 90);  // Ensure position is within bounds
       servo6.write(position6);
       motor6Y_F6 = false;  // Stop so servo doesn't keep going
       Serial.println(position6); // shows the position on serial mon
@@ -631,7 +631,7 @@ void loop()
   if(motor6Y_R6)
   {
       position6 -= 5.0f;   // Subtract 5 degrees to initial position
-      position6 = constrain(position6, 0, 270);  // Ensure position is within bounds
+      position6 = constrain(position6, 0, 90);  // Ensure position is within bounds
       servo6.write(position6);
       motor6Y_R6 = false;  // Stop so servo doesn't keep going
       Serial.println(position6); // shows the position on serial mon
