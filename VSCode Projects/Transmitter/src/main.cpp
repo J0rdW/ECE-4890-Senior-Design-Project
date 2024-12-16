@@ -15,8 +15,8 @@ const uint64_t recv_pipe=0xDEADBEEFF1L; // This will be the other device RX
  
 /**************** Servo Joystick ****************/
 // Joystick1
-#define VRX1_PIN A0
-#define VRY1_PIN A1
+#define VRX1_PIN A2
+#define VRY1_PIN A3
 
 // Joystick SW
 #define BUTTON_PIN 8
@@ -27,6 +27,10 @@ int buttonIncrement = 0;
 #define MotorJoyX_PIN A0
 #define MotorJoyY_PIN A1
 
+#define FRONT 7
+#define BACK 6
+#define LEFT 5
+#define RIGHT 4
 
 void setup()
 {
@@ -39,6 +43,10 @@ void setup()
   radio.setPALevel(RF24_PA_MIN);  // Sets the power level of the transciever
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(FRONT, INPUT_PULLUP);
+  pinMode(BACK, INPUT_PULLUP);
+  pinMode(LEFT, INPUT_PULLUP);
+  pinMode(RIGHT, INPUT_PULLUP);
 }
 
 /**************** Motor Control Codes ****************/
@@ -86,11 +94,18 @@ void setup()
 #define motor6YR 17
 #define servo6stop 18
 
+
+int front = 0;
+int back = 0;
+int left = 0;
+int right = 0;
+
 // Function prototype
 void swapServos();
 
 unsigned long button_code=NO_ACTION_SERVO; // Set to default
 void loop() {
+
   /********************** Motor joystick values ********************/
   int motorJoyY = analogRead(MotorJoyY_PIN);
   int motorJoyX = analogRead(MotorJoyX_PIN);
@@ -107,9 +122,8 @@ void loop() {
   int xValue1 = analogRead(VRX1_PIN);
   int y_joy_value1 = map(yValue1, 0, 1023, 0, 180);  // Remaps 0-1023 ADC value to 0-180, for y movement of joystick
   int x_joy_value1 = map(xValue1, 0, 1023, 0, 180);  // For x movement of joystick
-
   
-  /************************* State0 values control motors 1 & 2 *************************/
+  /************************* State0 values control servos 1 & 2 *************************/
   if(buttonIncrement == 0){
     if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
     //  Serial.println("Joystick not moving");
@@ -144,7 +158,7 @@ void loop() {
   /************************* State 1 values control motors 3 & 4 *************************/
   if(buttonIncrement == 1){
     if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
-    //  Serial.println("Joystick not moving");
+    // Serial.println("Joystick not moving");
     button_code = servo4stop;
     }
     

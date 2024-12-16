@@ -34,25 +34,21 @@ const uint64_t recv_pipe=0xDEADBEEFF1L; // They must be the same on both ends of
 #define R_EN2 28
 
 // LIDAR
-#define RPLIDAR_MOTOR 6
+#define RPLIDAR_MOTOR 3
 
 // LIDAR send codes (if wanted)
-#define G2_ON 30
-#define G2_OFF 31
-#define G3_ON 32
-#define G3_OFF 33
-#define R1_ON 34
-#define R1_OFF 35
-#define R2_ON 36
-#define R2_OFF 37
-#define R3_ON 38
-#define R3_OFF 39
-#define B1_ON 40
-#define B1_OFF 41
-#define B2_ON 42
-#define B2_OFF 43
-#define G1_ON 44
-#define G1_OFF 45
+#define R1_ON 30
+#define R1_OFF 31
+#define R2_ON 32
+#define R2_OFF 33
+#define B1_ON 34
+#define B1_OFF 35
+#define B2_ON 36
+#define B2_OFF 37
+#define G1_ON 38
+#define G1_OFF 39
+#define G2_ON 40
+#define G2_OFF 41
 
  
 bool motor_fw = false;
@@ -76,23 +72,11 @@ int displayAngle = 1;
 float inches;
 int maxDistance = 0;
 
-int thresh = 24;  // Threshold in inches for when the LED should light up.
-int maxFluctuation = 2; // The maximum fluctuation before being able to light an LED.
+int thresh = 50;  // Threshold in inches for when the LED should light up.
+int maxFluctuation = 1; // The maximum fluctuation in inches before being able to light an LED.
 
-#define samples 10  // Number of samples to take before determining if the
-float g2Buffer[samples] = {0};
-float g3Buffer[samples] = {0};
-float r1Buffer[samples] = {0};
-float r2Buffer[samples] = {0};
-float r3Buffer[samples] = {0};
-float b1Buffer[samples] = {0};
-float b2Buffer[samples] = {0};
-float g1Buffer[samples] = {0};
-int bufferIndex = 0;
 float minDistance = 0;
 int currentRangeStart = -1;
-
-RPLidar lidar;
 
 void checkMotor();  // Check motor codes
 void processLidar();  // Lidar code that contains the below functions
@@ -105,7 +89,6 @@ void updateLED(int rangeStart, float maxDistance, float minDistance, int thresh,
 
 void setup() {
   Serial.begin(115200);//Set up comm with the IDE serial monitor
-  Serial1.begin(115200);
   //Serial.println("Ready for commands");
   radio.begin();//Start up the radio object
   radio.setRetries(15,15);//This will improve reliability of the module if it encounters interference
@@ -122,146 +105,21 @@ void setup() {
   pinMode(R_EN1, OUTPUT);
   pinMode(F_EN2, OUTPUT);
   pinMode(R_EN2, OUTPUT);
-  lidar.begin(Serial1);
-  pinMode(RPLIDAR_MOTOR, OUTPUT);
 }
 
 unsigned long motor_code=NO_ACTION;
-unsigned long send_code=NO_ACTION;
+unsigned long controller_code=NO_ACTION;
 
 void loop() {
   checkMotor();
-  // processLidar();
-}
-
-void processLidar(){
-    // Wait for 1 sample
-  if (IS_OK(lidar.waitPoint())) { 
-    //perform data processing here:
-    float distance = lidar.getCurrentPoint().distance;
-    float angle = lidar.getCurrentPoint().angle;  // 0-360 deg
-    if(distance < 3000){
-      setRangeDist(angle, distance);
-    }
-  }
-  // Otherwise stop the LIDAR and retry
-  else {
-    analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
-    // Try to detect RPLIDAR
-    rplidar_response_device_info_t info;
-    if (IS_OK(lidar.getDeviceInfo(info, 100))) {
-       // Detected
-       lidar.startScan();
-       analogWrite(RPLIDAR_MOTOR, 255);
-       delay(1000);
-    }
-  }
-}
-
-float toInches(float d){
-  float distanceInches = d/25.4;
-  return distanceInches;
-}
-
-void setRangeDist(float a, float d){
-   // If reading is available (doesn't have 0 distance) then convert to inches and process the data
-  if(d != 0){
-    inches = toInches(d);
-  }
-  // If in 45-90 angle section, means it will be the 45 degree section (see updateLED function)
-  int rangeStart = (int(a) / 45)*45;
-
-  // If it's finally out of the range, process the minimum distance lidar saw
-  if(rangeStart != currentRangeStart){
-    // >= 0 to make sure lidar is reading >=0 angles and proper data
-    if(currentRangeStart >= 0){
-      updateLED(currentRangeStart, maxDistance, minDistance, thresh, maxFluctuation);
-    }
-    // Reset for the next range...
-    currentRangeStart = rangeStart;
-    minDistance = 10000;
-    maxDistance = 0;
-  }
-
-  // Starts determining the minimum distance it saw within the current range
-  if(inches < minDistance){
-    minDistance = inches;
-  }
-  if(inches > maxDistance){
-    maxDistance = inches;
-  }
-}
-
-// If the max distance is higher than thresh, write HIGH to proper LED
-void updateLED(int rangeStart, float maxDistance, float minDistance, int thresh, int maxFluctation){
-  int variation = maxDistance - minDistance;
-  
-  // Check the range
-  if((rangeStart == 180) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = G2_ON;
-    } else{
-      send_code = G2_OFF;
-    }
-  }
-  if((rangeStart == 225) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = G3_ON;
-    } else{
-      send_code = G3_OFF;
-    }
-  }
-  if((rangeStart == 270) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = R1_ON;
-    } else{
-      send_code = R1_OFF;
-    }
-  }
-  if((rangeStart == 315) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = R2_ON;
-    } else{
-      send_code = R2_OFF;
-    }
-  }
-  if((rangeStart == 0) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = R3_ON;
-    } else{
-      send_code = R3_OFF;
-    }
-  }
-  if((rangeStart == 45) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = B1_ON;
-    } else{
-      send_code = B1_OFF;
-    }
-  }
-  if((rangeStart == 90) && (variation < maxFluctation)){
-    if(minDistance > thresh){
-      send_code = B2_ON;
-    } else{
-      send_code = B2_OFF;
-    }
-  }
-  if((rangeStart == 135) && (variation < maxFluctation)){
-    Serial.println(minDistance);
-    if(minDistance > thresh){
-      send_code = G1_ON;
-    } else{
-      send_code = G1_OFF;
-    }
-  }
 }
 
 // Handle motor codes
 void checkMotor(){
   if( radio.available()) //Keep checking on each loop to see if any data has come in
   {
-      radio.read(&motor_code, sizeof(unsigned long)); //Stuff the incoming packet into the motor_code variable
-      //Serial.println(motor_code);
+    radio.read(&motor_code, sizeof(unsigned long)); //Stuff the incoming packet into the motor_code variable
+    //Serial.println(motor_code);
     // Check each "motor_code" 
     if(motor_code==R_STOP){
       motor_fw=false;
@@ -379,65 +237,65 @@ void checkMotor(){
   }
   // Turns left by turning left motor
   if(motor_right_stop){
-      // Set motors to maximum speed
-      // For PWM maximum possible values are 0 to 255
-      analogWrite(F_PWM1, 0);
-      analogWrite(R_PWM1, 255);
-      analogWrite(F_PWM2, 0);
-      analogWrite(R_PWM2, 255);
-      // Turn on motor A & B
-      digitalWrite(F_EN1, HIGH);
-      digitalWrite(R_EN1, HIGH);
-      digitalWrite(F_EN2, HIGH);
-      digitalWrite(R_EN2, HIGH);
-      delay(100);
+    // Set motors to maximum speed
+    // For PWM maximum possible values are 0 to 255
+    analogWrite(F_PWM1, 0);
+    analogWrite(R_PWM1, 255);
+    analogWrite(F_PWM2, 0);
+    analogWrite(R_PWM2, 255);
+    // Turn on motor A & B
+    digitalWrite(F_EN1, HIGH);
+    digitalWrite(R_EN1, HIGH);
+    digitalWrite(F_EN2, HIGH);
+    digitalWrite(R_EN2, HIGH);
+    delay(100);
   }
   if(motor_left_stop){
-      // Set motors to maximum speed
-      // For PWM maximum possible values are 0 to 255
-      analogWrite(F_PWM1, 255);
-      analogWrite(R_PWM1, 0);
-      analogWrite(F_PWM2, 255);
-      analogWrite(R_PWM2, 0);
-      // Turn on motor A & B
-      digitalWrite(F_EN1, HIGH);
-      digitalWrite(R_EN1, HIGH);
-      digitalWrite(F_EN2, HIGH);
-      digitalWrite(R_EN2, HIGH);
-      delay(100);
+    // Set motors to maximum speed
+    // For PWM maximum possible values are 0 to 255
+    analogWrite(F_PWM1, 255);
+    analogWrite(R_PWM1, 0);
+    analogWrite(F_PWM2, 255);
+    analogWrite(R_PWM2, 0);
+    // Turn on motor A & B
+    digitalWrite(F_EN1, HIGH);
+    digitalWrite(R_EN1, HIGH);
+    digitalWrite(F_EN2, HIGH);
+    digitalWrite(R_EN2, HIGH);
+    delay(100);
   }
   ////////// FORWARD
   if(motor_fw3)
   {
-      // Set motors to maximum speed
-      // For PWM maximum possible values are 0 to 255
-      analogWrite(F_PWM1, 255);
-      analogWrite(R_PWM1, 0);
-      analogWrite(F_PWM2, 0);
-      analogWrite(R_PWM2, 255);
-      // Turn on motor A & B
-      digitalWrite(F_EN1, HIGH);
-      digitalWrite(R_EN1, HIGH);
-      digitalWrite(F_EN2, HIGH);
-      digitalWrite(R_EN2, HIGH);
-      delay(100);
+    // Set motors to maximum speed
+    // For PWM maximum possible values are 0 to 255
+    analogWrite(F_PWM1, 255);
+    analogWrite(R_PWM1, 0);
+    analogWrite(F_PWM2, 0);
+    analogWrite(R_PWM2, 255);
+    // Turn on motor A & B
+    digitalWrite(F_EN1, HIGH);
+    digitalWrite(R_EN1, HIGH);
+    digitalWrite(F_EN2, HIGH);
+    digitalWrite(R_EN2, HIGH);
+    delay(100);
   }
   /////////// REVERSE
   if(motor_bw3)
   {
-      // Set motors to maximum speed
-      // For PWM maximum possible values are 0 to 255
-      analogWrite(F_PWM1, 0);
-      analogWrite(R_PWM1, 255);
-      analogWrite(F_PWM2, 255);
-      analogWrite(R_PWM2, 0);
-      // Turn on motor A & B
-      digitalWrite(F_EN1, HIGH);
-      digitalWrite(R_EN1, HIGH);
- 
-      digitalWrite(F_EN2, HIGH);
-      digitalWrite(R_EN2, HIGH);
-      delay(100);
+    // Set motors to maximum speed
+    // For PWM maximum possible values are 0 to 255
+    analogWrite(F_PWM1, 0);
+    analogWrite(R_PWM1, 255);
+    analogWrite(F_PWM2, 255);
+    analogWrite(R_PWM2, 0);
+    // Turn on motor A & B
+    digitalWrite(F_EN1, HIGH);
+    digitalWrite(R_EN1, HIGH);
+
+    digitalWrite(F_EN2, HIGH);
+    digitalWrite(R_EN2, HIGH);
+    delay(100);
   }
   ////// Stop both motors
   if(motor_stop){
@@ -457,3 +315,137 @@ void checkMotor(){
     delay(100);
   }
 }
+
+/*
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <RPLidar.h>
+
+RF24 radio(9, 10); // Create a commuications object for talking to the NRF24L01
+const uint64_t send_pipe=0xB01DFACECEL; // These are just arbitrary 64-bit numbers to use as pipe identifiers
+const uint64_t recv_pipe=0xDEADBEEFF1L; // They must be the same on both ends of the communciations
+
+#define RPLIDAR_MOTOR 3 // The PWM pin for control the speed of RPLIDAR's motor (MOTOCTRL).
+ 
+float minDistance = 100000;
+float angleAtMinDist = 0;
+int count = 0;
+ 
+#define NO_ACTION 0
+#define STOP 2
+#define BOTH 3
+ 
+// So far just moves at 1 speed
+#define SPEED3 12     // Forward
+#define REVERSE3 15   // Backward
+ 
+#define R_STOP 16 // Turns left
+#define L_STOP 17 // Turns right
+
+// LIDAR send codes
+#define R1_ON 30
+#define R1_OFF 31
+#define R2_ON 32
+#define R2_OFF 33
+#define B1_ON 34
+#define B1_OFF 35
+#define B2_ON 36
+#define B2_OFF 37
+#define G1_ON 38
+#define G1_OFF 39
+#define G2_ON 40
+#define G2_OFF 41
+
+unsigned long controller_code = NO_ACTION;
+ 
+RPLidar lidar;
+void lidarStart();
+void lidarStop();
+
+void processData(float angle, float distance);
+void setup() {
+  Serial.begin(115200);
+  Serial1.begin(115200);  // For RPLidar
+  lidar.begin(Serial1);
+  pinMode(RPLIDAR_MOTOR, OUTPUT);  // set pin modes
+
+  // RF stuff
+  radio.begin();//Start up the radio object
+  radio.setRetries(15,15);//This will improve reliability of the module if it encounters interference
+  radio.setPALevel(RF24_PA_LOW);//This sets the power low. This will reduce the range. RF24_PA_MAX would increase the range
+  radio.openWritingPipe(send_pipe);//Thses are the reverse of the transmit code.
+  radio.openReadingPipe(1,recv_pipe);
+  radio.startListening();//Give the module a kick
+}
+ 
+void loop() {
+  if(count < 200){
+    lidarStart();
+  } else{
+    lidarStop();
+  }
+}
+ 
+void processData(float angle, float distance)
+{
+  distance = distance/25.4;
+  Serial.print("dist: ");
+  Serial.print(distance);
+  Serial.print("    angle: ");
+  Serial.println(angle);
+  if((angle >= 180) && (angle < 240)){
+    controller_code = R1_OFF;
+  }
+  if((angle >= 240) && (angle < 300)){
+    controller_code = R2_OFF;
+  }
+  if((angle >= 300) && (angle < 360)){
+    controller_code = B1_OFF;
+  }
+  if((angle >= 0) && (angle < 60)){
+    controller_code = B2_OFF;
+  }
+  if((angle >= 60) && (angle < 120)){
+    controller_code = G1_OFF;
+  }
+  if((angle >= 120) && (angle < 180)){
+    controller_code = G2_OFF;
+  }
+  // Finally, receiver -> transmitter for controller to see LEDs
+  radio.stopListening();  // Make sure it becomes a transmitter
+  radio.write(&controller_code, sizeof(unsigned long));
+  delay(10);
+}
+ 
+void lidarStart(){
+    if (IS_OK(lidar.waitPoint())) {
+    //perform data processing here:
+    float distance = lidar.getCurrentPoint().distance;
+    float angle = lidar.getCurrentPoint().angle;  // 0-360 deg
+    if (lidar.getCurrentPoint().startBit) {
+       // a new scan, display the previous data...
+       processData(angleAtMinDist, minDistance);
+       minDistance = 100000;
+       angleAtMinDist = 0;
+    } else {
+       if ( distance > 0 &&  distance < minDistance) {
+          minDistance = distance;
+          angleAtMinDist = angle;
+       }
+    }
+  }
+  else {
+    analogWrite(RPLIDAR_MOTOR, 0); //stop the rplidar motor
+    // Try to detect RPLIDAR
+    rplidar_response_device_info_t info;
+    if (IS_OK(lidar.getDeviceInfo(info, 100))) {
+       // Detected
+       lidar.startScan();
+       analogWrite(RPLIDAR_MOTOR, 255);
+       delay(1000);
+    }
+  }
+}
+ 
+*/
