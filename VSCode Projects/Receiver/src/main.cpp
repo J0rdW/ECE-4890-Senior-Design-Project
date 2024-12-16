@@ -23,34 +23,26 @@ const uint64_t recv_pipe=0xDEADBEEFF1L; // They must be the same on both ends of
 // define Motor A connections (pin numbers so repeats are ok)
 #define F_PWM1 3
 #define R_PWM1 2
- 
 #define F_EN1 22
 #define R_EN1 24
+
 // define Motor B connections
 #define F_PWM2 5
 #define R_PWM2 4
- 
 #define F_EN2 26
 #define R_EN2 28
 
-// LIDAR
-#define RPLIDAR_MOTOR 3
+// define LIDAR input digital pins & variables
+#define FRONT 30
+#define BACK 31
+#define LEFT 32
+#define RIGHT 33
+int goForward = 0;
+int goBack = 0;
+int goLeft = 0;
+int goRight = 0;
 
-// LIDAR send codes (if wanted)
-#define R1_ON 30
-#define R1_OFF 31
-#define R2_ON 32
-#define R2_OFF 33
-#define B1_ON 34
-#define B1_OFF 35
-#define B2_ON 36
-#define B2_OFF 37
-#define G1_ON 38
-#define G1_OFF 39
-#define G2_ON 40
-#define G2_OFF 41
-
- 
+// Motor bools
 bool motor_fw = false;
 bool motor_bw = false;
 bool motor_fw2 = false;
@@ -61,31 +53,9 @@ bool motor_stop = false; // both motors stop
 bool motor_right_stop = false; // right motor stops
 bool motor_left_stop = false; // left motor stops
 
-// Lidar variables
-float angleAtMinDist = 0;
-int count = 0;
-float angle = 0;
-int lidarSection;
-int section;
-int displayDistance = 1;
-int displayAngle = 1;
-float inches;
-int maxDistance = 0;
-
-int thresh = 50;  // Threshold in inches for when the LED should light up.
-int maxFluctuation = 1; // The maximum fluctuation in inches before being able to light an LED.
-
-float minDistance = 0;
-int currentRangeStart = -1;
-
-void checkMotor();  // Check motor codes
-void processLidar();  // Lidar code that contains the below functions
-void printData();
-void lidarStart();
-void lidarStop();
-void setRangeDist(float angle, float distance);
-void updateLED(int rangeStart, float maxDistance, float minDistance, int thresh, int maxFluctation);
-
+// Function prototypes
+void checkMotor();
+void checkLidar();
 
 void setup() {
   Serial.begin(115200);//Set up comm with the IDE serial monitor
@@ -96,6 +66,13 @@ void setup() {
   radio.openWritingPipe(send_pipe);//Thses are the reverse of the transmit code.
   radio.openReadingPipe(1,recv_pipe);
   radio.startListening();//Give the module a kick
+
+  // Set the LIDAR input pins
+  pinMode(FRONT, INPUT);
+  pinMode(BACK, INPUT);
+  pinMode(LEFT, INPUT);
+  pinMode(RIGHT, INPUT);
+
   //Set all the motor control pins to outputs
   pinMode(F_PWM1, OUTPUT);
   pinMode(R_PWM1, OUTPUT);
@@ -107,11 +84,19 @@ void setup() {
   pinMode(R_EN2, OUTPUT);
 }
 
-unsigned long motor_code=NO_ACTION;
-unsigned long controller_code=NO_ACTION;
+unsigned long motor_code = NO_ACTION;
+unsigned long servo_code = NO_ACTION;  // Unused, might use later for servos?
 
 void loop() {
+  checkLidar();
   checkMotor();
+}
+
+void checkLidar(){
+  goForward = digitalRead(FRONT);
+  goBack = digitalRead(BACK);
+  goRight = digitalRead(RIGHT);
+  goLeft = digitalRead(LEFT);
 }
 
 // Handle motor codes
@@ -121,7 +106,7 @@ void checkMotor(){
     radio.read(&motor_code, sizeof(unsigned long)); //Stuff the incoming packet into the motor_code variable
     //Serial.println(motor_code);
     // Check each "motor_code" 
-    if(motor_code==R_STOP){
+    if((motor_code==R_STOP) && (goLeft == 0)){
       motor_fw=false;
       motor_bw=false;
       motor_fw2 = false;
@@ -132,7 +117,7 @@ void checkMotor(){
       motor_right_stop = true;
       motor_left_stop = false;
     }
-    if(motor_code==L_STOP){
+    if((motor_code==L_STOP) && (goRight == 0)){
       Serial.println("LEFT Go vrrroomm/RIGHT Go mmmmm");
       motor_fw=false;
       motor_bw=false;
@@ -144,7 +129,7 @@ void checkMotor(){
       motor_right_stop = false;
       motor_left_stop = true;
     }
-    if(motor_code==SPEED1)
+    if((motor_code==SPEED1) && (goForward == 0))
     {
       Serial.println("SPEED1");
       motor_fw=false;
@@ -156,7 +141,7 @@ void checkMotor(){
       motor_right_stop = false;
       motor_left_stop = false;
     }
-    if(motor_code==SPEED2)
+    if((motor_code==SPEED2) && (goForward == 0))
     {
       Serial.println("SPEED2");
       motor_fw=false;
@@ -168,7 +153,7 @@ void checkMotor(){
       motor_right_stop = false;
       motor_left_stop = false;
     }
-    if(motor_code==SPEED3)
+    if((motor_code==SPEED3) && (goForward == 0))
     {
       Serial.println("SPEED3");
       motor_fw=false;
@@ -195,7 +180,7 @@ void checkMotor(){
     }
 
  
-    else if(motor_code==REVERSE)
+    else if((motor_code==REVERSE) && (goBack == 0))
     {
       Serial.println("In reverse");
       motor_bw=true;
@@ -208,7 +193,7 @@ void checkMotor(){
       motor_right_stop = false;
       motor_left_stop = false;
     }
-    else if(motor_code==REVERSE2)
+    else if((motor_code==REVERSE2) && (goBack == 0))
     {
       Serial.println("In reverse2");
       motor_bw=false;
@@ -221,7 +206,7 @@ void checkMotor(){
       motor_right_stop = false;
       motor_left_stop = false;
     }
-    else if(motor_code==REVERSE3)
+    else if((motor_code==REVERSE3) && (goBack == 0))
     {
       Serial.println("In reverse3");
       motor_bw=false;
