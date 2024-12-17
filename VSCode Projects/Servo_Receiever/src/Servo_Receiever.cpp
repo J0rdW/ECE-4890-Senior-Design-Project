@@ -89,11 +89,11 @@ bool motor6Y_F6= false;
 bool motor6Y_R6= false;
 
 float position1=60;  // Starts at 60 degrees
-float position2=110;  // Starts at 110 degrees
-float position3=120;  // Starts at 120 degrees
+float position2=45;  // Starts at 110 degrees
+float position3=80;  // Starts at 120 degrees
 float position4=70;  // Starts at 70 degrees
 float position5=140;  // Starts at 140 degrees
-float position6=90;  // Starts at 90 degrees
+float position6=90;  // Starts at- 90 degrees
 
 int direction=1;
 
@@ -117,10 +117,12 @@ void setup()
   servo5.attach(SERVO5_PIN);//Spool up the servo -pin11
   servo6.attach(SERVO6_PIN);//Spool up the servo -pin12
 
-
-  servo1.write(position1); // initializing the position for servo 1
   servo2.write(position2); // initializing the position for servo 2
+  delay(200); 
+  servo1.write(position1); // initializing the position for servo 1
+  delay(200);
   servo3.write(position3); // initializing the position for servo 3 
+  delay(200); 
   servo4.write(position4); // initializing the position for servo 4
   servo5.write(position5); // initializing the position for servo 5
   servo6.write(position6); // initializing the position for servo 6
