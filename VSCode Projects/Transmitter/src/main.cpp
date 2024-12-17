@@ -7,12 +7,6 @@ RF24 radio(9, 10); // CE, CSN
 const uint64_t send_pipe=0xB01DFACECEL; // This will be this device TX
 const uint64_t recv_pipe=0xDEADBEEFF1L; // This will be the other device RX
 
-/**************** TODO NOTES WHEN MERGING CODE ****************/
-/*
-  - Joystick for motor went from A0 -> A2 and A1 -> A3
-  - Receiver code needs to match values of the code on the motors
-*/
- 
 /**************** Servo Joystick ****************/
 // Joystick1
 #define VRX1_PIN A2
@@ -34,7 +28,7 @@ int buttonIncrement = 0;
 
 void setup()
 {
-  Serial.begin(9600); // Set up comms with serial monitor
+  Serial.begin(115200); // Set up comms with serial monitor
   Serial.println("Start");
   radio.begin(); // Turn on comms
   radio.openWritingPipe(recv_pipe);
@@ -94,12 +88,6 @@ void setup()
 #define motor6YR 17
 #define servo6stop 18
 
-
-int front = 0;
-int back = 0;
-int left = 0;
-int right = 0;
-
 // Function prototype
 void swapServos();
 
@@ -116,6 +104,7 @@ void loop() {
   buttonState = digitalRead(BUTTON_PIN);
   if(buttonState == 0){
     swapServos();
+    delay(200);
   }
   // Read analog x and y values (10-bit ADC reads 0-1023, 0V-5V)
   int yValue1 = analogRead(VRY1_PIN);
@@ -123,105 +112,12 @@ void loop() {
   int y_joy_value1 = map(yValue1, 0, 1023, 0, 180);  // Remaps 0-1023 ADC value to 0-180, for y movement of joystick
   int x_joy_value1 = map(xValue1, 0, 1023, 0, 180);  // For x movement of joystick
   
-  /************************* State0 values control servos 1 & 2 *************************/
-  if(buttonIncrement == 0){
-    if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
-    //  Serial.println("Joystick not moving");
-    button_code = servo2stop;
-    }
-    
-    if((x_joy_value1 > 85) && (x_joy_value1 < 95)){
-    //  Serial.println("Joystick not moving");
-    button_code = servo1stop;
-    }  
-    
-    if((y_joy_value1 > 150) && (y_joy_value1 < 181)){                                    
-      Serial.println("Servo MOTOR2 forward");
-      button_code = motor2YF;
-    }
-    
-    if((y_joy_value1 > -1) && (y_joy_value1 < 30)){
-      Serial.println("Servo MOTOR2 reverse");
-      button_code = motor2YR;
-    }
-
-    if(x_joy_value1 > 179){
-      Serial.println("Servo MOTOR1 forward");
-      button_code = motor1XF;
-    }
-    if(x_joy_value1 < 5){
-      Serial.println("Servo MOTOR1 reverse");
-      button_code = motor1XR;
-    }
-  }
   
-  /************************* State 1 values control motors 3 & 4 *************************/
-  if(buttonIncrement == 1){
-    if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
-    // Serial.println("Joystick not moving");
-    button_code = servo4stop;
-    }
-    
-    if((x_joy_value1 > 85) && (x_joy_value1 < 95)){
-    //  Serial.println("Joystick not moving");
-    button_code = servo3stop;
-    }  
-    if((y_joy_value1 > 150) && (y_joy_value1 < 181)){                                    
-      Serial.println("Servo MOTOR4 forward");
-      button_code = motor4YF;
-    }
-    
-    if((y_joy_value1 > -1) && (y_joy_value1 < 30)){
-      Serial.println("Servo MOTOR4 reverse");
-      button_code = motor4YR;
-    }
-
-    if(x_joy_value1 > 179){
-      Serial.println("Servo MOTOR5 forward");
-      button_code = motor3XF;
-    }
-    if(x_joy_value1 < 5){
-      Serial.println("Servo MOTOR5 reverse");
-      button_code = motor3XR;
-    }
-  }
-  /************************* Joystick3 values control motors 5 & 6 *************************/
-  if(buttonIncrement == 2){
-    if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
-    //  Serial.println("Joystick not moving");
-    button_code = servo6stop;
-    }
-    
-    if((x_joy_value1 > 85) && (x_joy_value1 < 95)){
-    //  Serial.println("Joystick not moving");
-    button_code = servo5stop;
-    }    
-    if((y_joy_value1 > 150) && (y_joy_value1 < 181)){                                    
-      Serial.println("Servo MOTOR6 forward");
-      button_code = motor6YF;
-    }
-    
-    if((y_joy_value1 > -1) && (y_joy_value1 < 30)){
-      Serial.println("Servo MOTOR6 reverse");
-      button_code = motor6YR;
-    }
-
-    if(x_joy_value1 > 179){
-      Serial.println("Servo MOTOR1 forward");
-      button_code = motor5XF;
-    }
-    if(x_joy_value1 < 5){
-      Serial.println("Servo MOTOR1 reverse");
-      button_code = motor5XR;
-    } 
-  }
-
   /************************* Joystick conditions for BOTH motors forward and reverse *************************/
   if((yValueMotor > 89) && (yValueMotor < 92)){
     // Serial.println("Joystick not moving");
     button_code = STOP_MOTOR;
   }  
-  
   if((yValueMotor > 95) && (yValueMotor < 120)){
     Serial.println("REVERSE1");
     button_code = REVERSE3;
@@ -256,6 +152,99 @@ void loop() {
   if(xValueMotor < 5){
     Serial.println("Turning left");
     button_code = R_STOP;
+  }
+
+  /************************* State0 values control servos 1 & 2 *************************/
+  if(buttonIncrement == 0){
+    // if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
+    // //  Serial.println("Joystick not moving");
+    // button_code = servo2stop;
+    // }
+    
+    // if((x_joy_value1 > 85) && (x_joy_value1 < 95)){
+    // //  Serial.println("Joystick not moving");
+    // button_code = servo1stop;
+    // }  
+    
+    if((y_joy_value1 > 150) && (y_joy_value1 < 181)){                                    
+      Serial.println("Servo MOTOR2 reverse");
+      button_code = motor2YR;
+    }
+    
+    if((y_joy_value1 > -1) && (y_joy_value1 < 30)){
+      Serial.println("Servo MOTOR2 forward");
+      button_code = motor2YF;
+    }
+
+    if(x_joy_value1 > 179){
+      Serial.println("Servo MOTOR1 forward");
+      button_code = motor1XF;
+    }
+    if(x_joy_value1 < 5){
+      Serial.println("Servo MOTOR1 reverse");
+      button_code = motor1XR;
+    }
+  }
+  
+  /************************* State 1 values control motors 3 & 4 *************************/
+  if(buttonIncrement == 1){
+    // if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
+    // // Serial.println("Joystick not moving");
+    // button_code = servo4stop;
+    // }
+    
+    // if((x_joy_value1 > 85) && (x_joy_value1 < 95)){
+    // //  Serial.println("Joystick not moving");
+    // button_code = servo3stop;
+    // }  
+    if((y_joy_value1 > 150) && (y_joy_value1 < 181)){                                    
+      Serial.println("Servo MOTOR4 reverse");
+      button_code = motor4YR;
+    }
+    
+    if((y_joy_value1 > -1) && (y_joy_value1 < 30)){
+      Serial.println("Servo MOTOR4 forward");
+      button_code = motor4YF;
+    }
+
+    if(x_joy_value1 > 179){
+      Serial.println("Servo MOTOR3 reverse");
+      button_code = motor3XR;
+    }
+    if(x_joy_value1 < 5){
+      Serial.println("Servo MOTOR3 forward");
+      button_code = motor3XF;
+    }
+  }
+  /************************* Joystick3 values control motors 5 & 6 *************************/
+  if(buttonIncrement == 2){
+    // if((y_joy_value1 > 85) && (y_joy_value1 < 95)){
+    // //  Serial.println("Joystick not moving");
+    // button_code = servo6stop;
+    // }
+    
+    // if((x_joy_value1 > 85) && (x_joy_value1 < 95)){
+    // //  Serial.println("Joystick not moving");
+    // button_code = servo5stop;
+    // }    
+    if((y_joy_value1 > 150) && (y_joy_value1 < 181)){                                    
+      Serial.println("Servo MOTOR6 reverse");
+      button_code = motor6YR;
+    }
+    
+    if((y_joy_value1 > -1) && (y_joy_value1 < 30)){
+      Serial.println("Servo MOTOR6 forward");
+      button_code = motor6YF;
+    }
+
+    if(x_joy_value1 > 179){
+      Serial.println("Servo MOTOR5 forward");
+      button_code = motor5XF;
+    }
+    if(x_joy_value1 < 5){
+      Serial.println("Servo MOTOR5 reverse");
+      button_code = motor5XR;
+    } 
   }
 
   /************************* Fin(the end) *************************/

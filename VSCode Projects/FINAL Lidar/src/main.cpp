@@ -34,6 +34,7 @@ void processData(float angle, float distance);
 #define RIGHT 8
 
 void setup() {
+  
   Serial.begin(115200);//Set up comm with the IDE serial monitor
   Serial1.begin(115200);
   lidar.begin(Serial1);
@@ -61,7 +62,7 @@ void processLidar(){
        minDistance = 100000;
        angleAtMinDist = 0;
     } else {
-       if ( distance > 0 &&  distance < minDistance) {
+       if ( distance > 300 &&  distance < minDistance) {
           minDistance = distance;
           angleAtMinDist = angle;
        }
@@ -86,11 +87,11 @@ float toInches(float d){
 
 void processData(float angle, float distance)
 {
-  // Serial.print("dist: ");
-  // Serial.print(distance);
-  // Serial.print("    angle: ");
-  // Serial.println(angle);
-  if((angle >= 150) && (angle < 210)){
+  Serial.print("dist: ");
+  Serial.print(distance);
+  Serial.print("    angle: ");
+  Serial.println(angle);
+  if((angle <= 225) && (angle >= 150) && (angle < 210)){
     digitalWrite(FRONT, HIGH);
     digitalWrite(BACK, LOW);
     digitalWrite(LEFT, LOW);
