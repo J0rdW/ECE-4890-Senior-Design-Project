@@ -93,7 +93,6 @@ void swapServos();
 
 unsigned long button_code=NO_ACTION_SERVO; // Set to default
 void loop() {
-
   /********************** Motor joystick values ********************/
   int motorJoyY = analogRead(MotorJoyY_PIN);
   int motorJoyX = analogRead(MotorJoyX_PIN);
@@ -111,7 +110,6 @@ void loop() {
   int xValue1 = analogRead(VRX1_PIN);
   int y_joy_value1 = map(yValue1, 0, 1023, 0, 180);  // Remaps 0-1023 ADC value to 0-180, for y movement of joystick
   int x_joy_value1 = map(xValue1, 0, 1023, 0, 180);  // For x movement of joystick
-  
   
   /************************* Joystick conditions for BOTH motors forward and reverse *************************/
   if((yValueMotor > 89) && (yValueMotor < 92)){
@@ -176,7 +174,7 @@ void loop() {
       button_code = motor2YF;
     }
 
-    if(x_joy_value1 > 179){
+    if(x_joy_value1 > 150){
       Serial.println("Servo MOTOR1 forward");
       button_code = motor1XF;
     }
@@ -207,7 +205,7 @@ void loop() {
       button_code = motor4YF;
     }
 
-    if(x_joy_value1 > 179){
+    if(x_joy_value1 > 150){
       Serial.println("Servo MOTOR3 reverse");
       button_code = motor3XR;
     }
@@ -237,7 +235,7 @@ void loop() {
       button_code = motor6YF;
     }
 
-    if(x_joy_value1 > 179){
+    if(x_joy_value1 > 150){
       Serial.println("Servo MOTOR5 forward");
       button_code = motor5XF;
     }
