@@ -112,7 +112,7 @@ void loop() {
   int x_joy_value1 = map(xValue1, 0, 1023, 0, 180);  // For x movement of joystick
   
   /************************* Joystick conditions for BOTH motors forward and reverse *************************/
-  if((yValueMotor > 89) && (yValueMotor < 92)){
+  if((yValueMotor > 85) && (yValueMotor < 92)){
     // Serial.println("Joystick not moving");
     button_code = STOP_MOTOR;
   }  
